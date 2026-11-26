@@ -3,7 +3,7 @@ import sqlite3
 
 from fastapi import APIRouter, Depends, Query
 
-from app.api.commun import Page, paginer
+from app.api.commun import Page, avec_raison_sociale, paginer
 from app.api.deps import authentifie, exiger, get_conn
 from app.domain.imports import lire_date
 from app.errors import Validation
@@ -29,7 +29,7 @@ def envoyer(u: Utilisateur = Depends(authentifie),
 @routeur.get("/relances/suspensions", summary="Échéances suspendues avec leur motif")
 def suspensions(page: Page = Depends(), _: Utilisateur = Depends(authentifie),
                 conn: sqlite3.Connection = Depends(get_conn)) -> dict:
-    return paginer(svc.suspensions(conn), page,
+    return paginer(avec_raison_sociale(conn, svc.suspensions(conn)), page,
                    {"echeance_id", "facture_id", "client_id", "motif", "date_echeance", "solde"})
 
 
@@ -43,7 +43,8 @@ def liste(statut: str | None = Query(None, pattern="^(PLANIFIEE|EN_ATTENTE_VALID
           conn: sqlite3.Connection = Depends(get_conn)) -> dict:
     if date and lire_date(date) is None:
         raise Validation("date doit être une date AAAA-MM-JJ.")
-    return paginer(svc.lister_relances(conn, statut, client_id, etape, date), page,
+    return paginer(avec_raison_sociale(conn, svc.lister_relances(
+        conn, statut, client_id, etape, date)), page,
                    {"id", "client_id", "date_prevue", "date_envoi", "statut", "etape"})
 
 
@@ -73,5 +74,5 @@ def envois(canal: str | None = Query(None, pattern="^(WHATSAPP|EMAIL)$"),
            client_id: str | None = None, page: Page = Depends(),
            _: Utilisateur = Depends(authentifie),
            conn: sqlite3.Connection = Depends(get_conn)) -> dict:
-    return paginer(svc.boite_envoi(conn, canal, client_id), page,
+    return paginer(avec_raison_sociale(conn, svc.boite_envoi(conn, canal, client_id)), page,
                    {"id", "horodatage", "client_id", "canal", "date_envoi"})

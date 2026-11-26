@@ -4,7 +4,7 @@ import sqlite3
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
-from app.api.commun import Page, paginer
+from app.api.commun import Page, avec_raison_sociale, paginer
 from app.api.deps import authentifie, exiger, get_conn
 from app.errors import Introuvable, Validation
 from app.journal import utilisateur
@@ -76,8 +76,8 @@ def liste_promesses(statut: str | None = Query(
                     facture_id: str | None = None, page: Page = Depends(),
                     _: Utilisateur = Depends(authentifie),
                     conn: sqlite3.Connection = Depends(get_conn)) -> dict:
-    return paginer(_lister(conn, "promesses_paiement",
-                           {"statut": statut, "facture_id": facture_id}), page,
+    return paginer(avec_raison_sociale(conn, _lister(
+        conn, "promesses_paiement", {"statut": statut, "facture_id": facture_id})), page,
                    {"id", "date_promise", "facture_id", "statut"})
 
 
@@ -144,6 +144,7 @@ def liste_revue(type: str | None = None,
                 conn: sqlite3.Connection = Depends(get_conn)) -> dict:
     lignes = _lister(conn, "file_revue", {"type": type, "statut": statut, "client_id": client_id})
     lignes.sort(key=lambda r: (-r["priorite"], r["cree_le"], r["id"]))
+    avec_raison_sociale(conn, lignes)
     if not page.tri:
         return {"total": len(lignes), "elements": lignes[page.decalage:page.decalage
                                                            + page.limite]}

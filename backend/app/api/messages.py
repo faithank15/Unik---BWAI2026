@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from app.api.commun import Page, paginer
+from app.api.commun import Page, avec_raison_sociale, paginer
 from app.api.deps import authentifie, get_conn
 from app.journal import utilisateur
 from app.security import Utilisateur
@@ -39,7 +39,8 @@ def liste(statut_traitement: str | None = Query(
           categorie: str | None = None, client_id: str | None = None, page: Page = Depends(),
           _: Utilisateur = Depends(authentifie),
           conn: sqlite3.Connection = Depends(get_conn)) -> dict:
-    return paginer(svc.lister_messages(conn, statut_traitement, categorie, client_id), page,
+    return paginer(avec_raison_sociale(conn, svc.lister_messages(
+        conn, statut_traitement, categorie, client_id)), page,
                    {"id", "date_reception", "client_id", "statut_traitement", "confiance"})
 
 

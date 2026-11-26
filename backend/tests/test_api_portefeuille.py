@@ -205,3 +205,27 @@ def test_admin_reset_recharge_le_jeu(api, valid, reglages_charge):
                                           "mot_de_passe": MDP_VALIDATEUR}).json()["jeton"]
     h = {"Authorization": f"Bearer {j}"}
     assert api.get("/api/contexte", headers=h).json()["date_reference"] == "2026-12-15"
+
+
+def test_les_listes_donnent_le_nom_du_client(api, gest, valid):
+    """Demande de l'interface : un nom par ligne sans charger les 30 clients (champ ajouté,
+    contrat inchangé pour les lecteurs existants)."""
+    from tests.aides_relances import envoyer, planifier
+    planifier(api, gest)
+    envoyer(api, gest)
+    api.post("/api/messages", headers=gest, json={
+        "client_id": "CLI-0001", "canal": "WHATSAPP", "contenu": "Bonjour"})
+    noms = {c["id"]: c["raison_sociale"] for c in api.get(
+        "/api/clients?limite=200", headers=gest).json()["elements"]}
+    for url in ("/api/factures", "/api/priorisation", "/api/relances", "/api/relances/suspensions",
+                "/api/canaux/envois", "/api/revue", "/api/messages", "/api/promesses"):
+        elements = api.get(f"{url}?limite=200", headers=gest).json()["elements"]
+        assert elements, url
+        for e in elements:
+            assert "client_raison_sociale" in e, url
+            attendu = noms.get(e.get("client_id")) if e.get("client_id") else None
+            assert e["client_raison_sociale"] == attendu, (url, e.get("client_id"))
+    # une revue sans client (paiement non identifiable) a un nom nul, sans erreur
+    revue = api.get("/api/revue?type=PAIEMENT_AMBIGU", headers=gest).json()["elements"]
+    assert revue and all(r["client_raison_sociale"] is None for r in revue
+                         if r["client_id"] is None)

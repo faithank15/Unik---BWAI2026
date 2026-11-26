@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
 from app import clock
-from app.api.commun import Page, paginer
+from app.api.commun import Page, avec_raison_sociale, paginer
 from app.api.deps import authentifie, get_conn
 from app.domain import imports as dom
 from app.errors import Introuvable, Validation
@@ -194,6 +194,7 @@ def liste_factures(statut: str | None = None, client_id: str | None = None,
                                              "montant_ttc", "statut", "partiellement_payee",
                                              "solde", "affecte", "retard_jours")},
                        "suspension": susp.get(f["id"])})
+    avec_raison_sociale(conn, lignes)
     return paginer(lignes, page, {"id", "numero", "client_id", "montant_ttc", "solde",
                                   "retard_jours", "date_emission", "statut"})
 
@@ -244,6 +245,7 @@ def priorisation(page: Page = Depends(), _: Utilisateur = Depends(authentifie),
                  conn: sqlite3.Connection = Depends(get_conn)) -> dict:
     susp = _suspension_par_facture(conn)
     lignes = [{**x, "suspension": susp.get(x["facture_id"])} for x in calculs.priorisation(conn)]
+    avec_raison_sociale(conn, lignes)
     return {**paginer(lignes, page,
                       {"rang", "retard_jours", "solde", "score", "facture_id"}),
             "date_reference": clock.date_reference(conn).isoformat()}
