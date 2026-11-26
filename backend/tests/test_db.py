@@ -8,12 +8,12 @@ from app.db import connecter, prochain_id, transaction
 from app.journal import journaliser
 
 
-def test_schema_23_tables_3_vues(db):
+def test_schema_24_tables_3_vues(db):
     noms = {(r["type"], r["name"]) for r in db.execute(
         "SELECT type, name FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'")}
     tables = [n for t, n in noms if t == "table"]
     vues = [n for t, n in noms if t == "view"]
-    assert len(tables) == 23, sorted(tables)
+    assert len(tables) == 24, sorted(tables)     # 23 + redactions (extension IA)
     assert len(vues) == 3
 
 

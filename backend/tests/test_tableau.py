@@ -259,6 +259,12 @@ def test_J02_chaque_evenement_du_catalogue_est_emis(api, gest, valid, faux_llm, 
         c.row_factory = sqlite3.Row
         return c
     G = gest
+    # Rédaction du courriel : valide pour un ton NEUTRE (R1), refusée (chiffres) pour les autres,
+    # donc REDACTION_GENEREE et REDACTION_REPLI sont émis par le flux normal d'envoi.
+    from app.ia.faux import redaction_valide
+    faux_llm.rediger = lambda contexte: (
+        redaction_valide(ton_applique="NEUTRE") if contexte["ton_cible"] == "NEUTRE"
+        else redaction_valide(introduction="Vous devez 5000 FCFA."))
     api.post("/api/auth/login", json={"nom_utilisateur": "gestionnaire", "mot_de_passe": "x"})
     api.post("/api/relances/REL-0001/valider", headers=G)                    # ACCES_REFUSE
     api.post("/api/imports", headers=G, files=fichiers_nominal())            # IMPORT_DEJA_FAIT
@@ -319,6 +325,9 @@ def test_J02_chaque_evenement_du_catalogue_est_emis(api, gest, valid, faux_llm, 
         "client_id": f66["client"]["id"], "date_paiement": D0, "montant": f66["montant_ttc"],
         "mode": "VIREMENT", "reference_externe": "VIR-CAT-2",
         "references_indiquees": [f66["numero"]]})
+    cle = api.get("/api/redactions", headers=G).json()["elements"][0]["cle"]
+    api.post("/api/redactions/relue", headers=G, json={"cle": cle})          # REDACTION_RELUE
+    api.post("/api/relances/manuelle", headers=G, json={"client_id": "CLI-0002"})   # MANUELLE_CREEE
     api.put("/api/parametres/simulation_llm_indisponible", headers=valid,
             json={"valeur": "true"})
     m3 = api.post("/api/messages", headers=G, json={

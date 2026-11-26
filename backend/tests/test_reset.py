@@ -88,7 +88,14 @@ def test_RE02_deux_resets_complets_identiques_hors_horodatages(tmp_path):
         tables = [x[0] for x in c.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT IN "
             "('sessions','journal','utilisateurs','envois_simules')")]
-        out = {t: c.execute(f"SELECT * FROM {t} ORDER BY 1,2").fetchall() for t in tables}
+        # Colonnes d'horodatage réel (heure de création, de début, de fin) : exclues, elles
+        # changent d'une seconde à l'autre ; tout le reste doit être identique.
+        horodatages = {"cree_le", "resolu_le", "debut", "fin", "horodatage"}
+        out = {}
+        for t in tables:
+            cols = [x[1] for x in c.execute(f"PRAGMA table_info({t})")
+                    if x[1] not in horodatages]
+            out[t] = c.execute(f"SELECT {', '.join(cols)} FROM {t} ORDER BY 1,2").fetchall()
         out["journal"] = c.execute("SELECT date_reference, type_evenement, objet_id, avant, "
                                    "apres, details FROM journal ORDER BY id").fetchall()
         c.close()

@@ -16,10 +16,11 @@ from app.db import prochain_id, transaction
 from app.domain import canevas
 from app.domain import relances as dom
 from app.domain.calendrier import est_jour_ouvre, indices_jours_evites
-from app.errors import Introuvable
+from app.errors import Introuvable, RegleMetier
 from app.journal import Acteur, journaliser
 from app.parametres import lire_booleen, lire_entier, lire_texte
 from app.services import parametres as svc_parametres
+from app.services import redaction as svc_redaction
 from app.services.revue import ouvrir_revue, resoudre_revues
 
 
@@ -376,19 +377,33 @@ def _soldes_courants(conn: sqlite3.Connection, relance_id: str) -> list[sqlite3.
         "ORDER BY l.echeance_id", (relance_id,)).fetchall()
 
 
-def _rendre(conn: sqlite3.Connection, r: sqlite3.Row, lignes: list[sqlite3.Row]
-            ) -> tuple[str | None, str]:
+def _rendre(conn: sqlite3.Connection, r: sqlite3.Row, lignes: list[sqlite3.Row],
+            acteur: Acteur | None = None) -> tuple[str | None, str]:
+    objet, corps, _ = _rendre_origine(conn, r, lignes, acteur)
+    return objet, corps
+
+
+def _rendre_origine(conn: sqlite3.Connection, r: sqlite3.Row, lignes: list[sqlite3.Row],
+                    acteur: Acteur | None = None) -> tuple[str | None, str, str]:
+    """(objet, contenu, origine) : la rédaction du LLM lue dans le cache pour un courriel
+    (origine LLM), sinon le canevas fixe de l'étape (origine CANEVAS). Aucun appel au LLM ici."""
+    if lignes and svc_redaction.active(conn, r["canal"]):
+        ctx = svc_redaction.construire_contexte(conn, r, lignes)
+        rendu = svc_redaction.assembler(conn, ctx, acteur, r["id"])
+        if rendu is not None:
+            return rendu[0], rendu[1], "LLM"
     inter = conn.execute("SELECT interlocuteur FROM preferences_contact WHERE client_id = ?",
                          (r["client_id"],)).fetchone()
     ton = dom.ton([l_["etape_echeance"] for l_ in lignes])
     annee = clock.date_reference(conn).year
     numero = int(r["id"].split("-")[1])
-    return canevas.rendre(
+    objet, corps = canevas.rendre(
         ton, r["canal"], inter[0] if inter else None,
         lire_texte(conn, "nom_entreprise_emettrice"),
         [canevas.LigneMessage(l_["numero"], date.fromisoformat(l_["date_echeance"]),
                               l_["solde"], l_["taux_penalite_retard"]) for l_ in lignes],
         f"MM-SIM-{annee}-{numero:06d}")
+    return objet, corps, "CANEVAS"
 
 
 def traiter_relance(conn: sqlite3.Connection, relance_id: str, acteur: Acteur) -> dict:
@@ -425,7 +440,7 @@ def traiter_relance(conn: sqlite3.Connection, relance_id: str, acteur: Acteur) -
                                         evites)
     dernier = _dernier_envoi(conn, r["client_id"], r["canal"], exclure=relance_id)
     total_courant = sum(x["solde"] for x in _soldes_courants(conn, relance_id))
-    if not dom.espacement_respecte(
+    if r["origine"] != "MANUELLE" and not dom.espacement_respecte(
             ctx.ref, dernier, dom.ecart_minimal(rattrapage, ctx.p, total_courant)):
         _annuler(conn, r, "ESPACEMENT_NON_RESPECTE", acteur)
         return {"id": relance_id, "resultat": "ANNULEE", "statut": "ANNULEE",
@@ -443,7 +458,7 @@ def traiter_relance(conn: sqlite3.Connection, relance_id: str, acteur: Acteur) -
                         apres={"statut": "EN_ATTENTE_VALIDATION"}, details={"total": total})
         return {"id": relance_id, "resultat": "EN_ATTENTE_VALIDATION",
                 "statut": "EN_ATTENTE_VALIDATION"}
-    objet, contenu = _rendre(conn, r, soldes)
+    objet, contenu, origine_texte = _rendre_origine(conn, r, soldes, acteur)
     client = conn.execute("SELECT email, whatsapp FROM clients WHERE id = ?",
                           (r["client_id"],)).fetchone()
     destinataire = client["email"] if r["canal"] == "EMAIL" else client["whatsapp"]
@@ -462,7 +477,7 @@ def traiter_relance(conn: sqlite3.Connection, relance_id: str, acteur: Acteur) -
                 avant={"statut": r["statut"]},
                 apres={"statut": "ENVOYEE_SIM", "date_envoi": ctx.ref.isoformat()},
                 details={"canal": r["canal"], "total_solde": total,
-                         "valide_par": r["valide_par"]})
+                         "valide_par": r["valide_par"], "texte": origine_texte})
     return {"id": relance_id, "resultat": "ENVOYEE_SIM", "statut": "ENVOYEE_SIM"}
 
 
@@ -473,9 +488,12 @@ def envoyer_relance(conn: sqlite3.Connection, relance_id: str, acteur: Acteur) -
         return traiter_relance(conn, relance_id, acteur)
 
 
-def valider_relance(conn: sqlite3.Connection, relance_id: str, acteur: Acteur) -> dict:
+def valider_relance(conn: sqlite3.Connection, relance_id: str, acteur: Acteur,
+                    redacteur=None) -> dict:
     """Validation humaine (VALIDATEUR) d'une relance de gros montant : renseigne valide_par,
     résout l'entrée de revue puis rappelle l'envoi, qui revérifie tout."""
+    if redacteur is not None:                           # rédaction du LLM, hors transaction
+        svc_redaction.preparer(conn, redacteur, relance_id)
     with transaction(conn):
         r = conn.execute("SELECT * FROM relances WHERE id = ?", (relance_id,)).fetchone()
         if r is None:
@@ -526,7 +544,7 @@ def annuler_injustifiees(conn: sqlite3.Connection, client_id: str | None, acteur
 
 
 # ---- lot d'envoi ------------------------------------------------------------------------
-def envoyer_lot(conn: sqlite3.Connection, acteur: Acteur) -> dict:
+def envoyer_lot(conn: sqlite3.Connection, acteur: Acteur, redacteur=None) -> dict:
     """Envoie les relances PLANIFIEE dont la date prévue est atteinte, dans l'ordre des
     identifiants, une transaction par relance, avec progression dans `traitements_lot`.
     Avec `simulation_interruption_apres` = N, le lot s'arrête après N relances (INTERROMPU) ;
@@ -552,6 +570,8 @@ def envoyer_lot(conn: sqlite3.Connection, acteur: Acteur) -> dict:
                 svc_parametres.ecrire_parametre_tx(conn, "simulation_interruption_apres", "",
                                                    acteur)
             break
+        if redacteur is not None:                      # rédaction du LLM, hors transaction
+            svc_redaction.preparer(conn, redacteur, rid)
         res = envoyer_relance(conn, rid, acteur)
         compte[res["resultat"]] = compte.get(res["resultat"], 0) + 1
         traites += 1
@@ -567,7 +587,102 @@ def envoyer_lot(conn: sqlite3.Connection, acteur: Acteur) -> dict:
                 "EN_ATTENTE_VALIDATION"], "deja_traitees": compte["DEJA_TRAITEE"]}
 
 
-def avancer(conn: sqlite3.Connection, jours: int, executer: bool, acteur: Acteur) -> dict:
+def _etape_manuelle(date_echeance: date, ref: date, p: dom.ParamsRelances,
+                    traitees: dict[str, dom.EtapeTraitee]) -> str:
+    """Étape d'une relance manuelle : la première étape échue (R1, R2, R3) pas encore envoyée,
+    donc jamais R3 directement ; si toutes les étapes échues sont envoyées, la dernière."""
+    dues = [e for e in ("R1", "R2", "R3") if dom.date_brute(date_echeance, e, p) <= ref]
+    for e in dues:
+        if e not in traitees or traitees[e].statut != "ENVOYEE":
+            return e
+    return dues[-1]
+
+
+def relancer_manuellement(conn: sqlite3.Connection, client_id: str, canal: str | None,
+                          facture_ids: list[str] | None, commentaire: str | None,
+                          acteur: Acteur, redacteur=None) -> dict:
+    """Relance instantanée demandée par le gestionnaire (message rédigé par le LLM pour un
+    courriel, canevas fixe en repli). Elle ne contourne aucune règle de protection : jour
+    ouvré, préférences et consentement, suspensions, solde revérifié juste avant l'envoi, gros
+    montant en validation humaine. Elle ne dépend pas du calendrier ni de l'espacement. Un seul
+    envoi manuel par client et par canal et par jour : le rejeu renvoie la relance existante.
+    Trois temps : création (transaction), rédaction du LLM (hors transaction), envoi
+    revérifié (transaction)."""
+    with transaction(conn):
+        ref = clock.date_reference(conn)
+        ctx = charger_contexte(conn)
+        c = _clients(conn).get(client_id)
+        if c is None:
+            raise Introuvable(f"Client {client_id} introuvable.")
+        if not est_jour_ouvre(ref, ctx.feries):
+            raise RegleMetier("JOUR_NON_OUVRE", "Pas de relance un jour non ouvré "
+                              "(dimanche ou jour férié).", {"date": ref.isoformat()})
+        auto, motif_revue = canal_du_client(c)
+        if auto is None:
+            raise RegleMetier(motif_revue, "Contact impossible : consentement absent ou aucun "
+                              "canal valide. Corrigez les préférences du client.")
+        canal = canal or auto
+        if (canal not in (c["canaux_autorises"] or "").split(";")
+                or not (c["email"] if canal == "EMAIL" else c["whatsapp"])):
+            raise RegleMetier("CANAL_INVALIDE", f"Le canal {canal} n'est pas utilisable pour "
+                              "ce client.", {"canal": canal})
+        if ref.weekday() in jours_evites(c):
+            raise RegleMetier("JOUR_A_EVITER", "Ce client préfère ne pas être relancé ce jour.",
+                              {"jour": ref.weekday()})
+        deja = conn.execute(
+            "SELECT id, statut FROM relances WHERE client_id = ? AND canal = ? AND origine = "
+            "'MANUELLE' AND date_prevue = ? AND statut <> 'ANNULEE'",
+            (client_id, canal, ref.isoformat())).fetchone()
+        if deja:
+            return {"relance_id": deja["id"], "deja_fait": True}
+        en_cours = conn.execute(
+            "SELECT id FROM relances WHERE client_id = ? AND canal = ? AND statut IN "
+            "('PLANIFIEE', 'EN_ATTENTE_VALIDATION')", (client_id, canal)).fetchone()
+        if en_cours:
+            raise RegleMetier("RELANCE_DEJA_EN_COURS", "Une relance est déjà préparée pour ce "
+                              "client et ce canal : envoyez-la ou validez-la plutôt que d'en "
+                              "créer une seconde.", {"relance_id": en_cours["id"]})
+        lignes, suspendues, traitees = [], [], _traitees(conn)
+        for e in _candidats(conn):
+            if e["client_id"] != client_id or (
+                    facture_ids and e["facture_id"] not in facture_ids):
+                continue
+            if (ref - date.fromisoformat(e["date_echeance"])).days <= 0:
+                continue                                # non échue : rien à relancer
+            motif = motif_suspension(ctx, e["facture_id"], e["echeance_id"], client_id)
+            if motif:
+                suspendues.append({"echeance_id": e["echeance_id"], "motif": motif})
+                continue
+            lignes.append((e, _etape_manuelle(date.fromisoformat(e["date_echeance"]), ref,
+                                              ctx.p, traitees.get(e["echeance_id"], {}))))
+        if not lignes:
+            raise RegleMetier("RIEN_A_RELANCER", "Aucune échéance échue et relançable pour ce "
+                              "client (soldée, non échue ou suspendue).",
+                              {"suspendues": suspendues})
+        etapes = [s for _, s in lignes]
+        cle = dom.cle_idempotence(client_id, canal, [(e["echeance_id"], s) for e, s in lignes],
+                                  ref) + "|MANUELLE"
+        rid = prochain_id(conn, "REL")
+        conn.execute(
+            "INSERT INTO relances(id, client_id, canal, etape, date_prevue, statut, motif, "
+            "cle_idempotence, origine, demandee_par) VALUES (?,?,?,?,?,'PLANIFIEE','MANUELLE',"
+            "?,'MANUELLE',?)", (rid, client_id, canal, dom.etape_de_relance(etapes),
+                                ref.isoformat(), cle, acteur.id))
+        for e, s in sorted(lignes, key=lambda x: x[0]["echeance_id"]):
+            conn.execute("INSERT INTO relance_lignes(relance_id, echeance_id, etape_echeance) "
+                         "VALUES (?,?,?)", (rid, e["echeance_id"], s))
+        journaliser(conn, "RELANCE_MANUELLE_CREEE", "RELANCE", rid, acteur=acteur,
+                    apres={"client_id": client_id, "canal": canal, "etapes": sorted(etapes),
+                           "total_solde": sum(e["solde"] for e, _ in lignes)},
+                    details={"commentaire": commentaire, "suspendues": suspendues})
+    redaction = svc_redaction.preparer(conn, redacteur, rid)        # hors transaction
+    resultat = envoyer_relance(conn, rid, acteur)                   # revérifie puis envoie
+    return {"relance_id": rid, "deja_fait": False, "resultat": resultat["resultat"],
+            "motif": resultat.get("motif"), "redaction": redaction}
+
+
+def avancer(conn: sqlite3.Connection, jours: int, executer: bool, acteur: Acteur,
+            redacteur=None) -> dict:
     """Avance la date de référence d'un jour à la fois ; avec `executer`, lance la
     planification puis l'envoi à chaque jour (les gros montants restent en attente)."""
     resultats = []
@@ -577,7 +692,7 @@ def avancer(conn: sqlite3.Connection, jours: int, executer: bool, acteur: Acteur
         jour = {"date": suivant}
         if executer:
             jour["planification"] = planifier(conn, acteur)
-            jour["envoi"] = envoyer_lot(conn, acteur)
+            jour["envoi"] = envoyer_lot(conn, acteur, redacteur)
         resultats.append(jour)
     return {"date_reference": clock.date_reference(conn).isoformat(), "jours": jours,
             "executer": executer, "resultats": resultats}

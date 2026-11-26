@@ -39,6 +39,9 @@ MATRICE: dict[tuple[str, str], str] = {
     # Relances et canaux simulés
     ("POST", "/api/relances/planifier"): AUTH,
     ("POST", "/api/relances/envoyer"): AUTH,
+    ("POST", "/api/relances/manuelle"): AUTH,
+    ("GET", "/api/redactions"): AUTH,
+    ("POST", "/api/redactions/relue"): AUTH,
     ("GET", "/api/relances"): AUTH,
     ("GET", "/api/relances/suspensions"): AUTH,
     ("GET", "/api/relances/{}"): AUTH,

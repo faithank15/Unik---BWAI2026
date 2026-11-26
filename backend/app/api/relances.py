@@ -1,7 +1,8 @@
 """Relances et canaux simulés."""
 import sqlite3
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request, Response
+from pydantic import BaseModel, Field
 
 from app.api.commun import Page, avec_raison_sociale, paginer
 from app.api.deps import authentifie, exiger, get_conn
@@ -9,6 +10,7 @@ from app.domain.imports import lire_date
 from app.errors import Validation
 from app.journal import utilisateur
 from app.security import Utilisateur
+from app.services import redaction as svc_redaction
 from app.services import relances as svc
 
 routeur = APIRouter(prefix="/api", tags=["Relances et canaux simulés"])
@@ -21,9 +23,48 @@ def planifier(u: Utilisateur = Depends(authentifie),
 
 
 @routeur.post("/relances/envoyer", summary="Revérifie et envoie les relances PLANIFIEE du jour")
-def envoyer(u: Utilisateur = Depends(authentifie),
+def envoyer(request: Request, u: Utilisateur = Depends(authentifie),
             conn: sqlite3.Connection = Depends(get_conn)) -> dict:
-    return svc.envoyer_lot(conn, utilisateur(u.id))
+    return svc.envoyer_lot(conn, utilisateur(u.id), request.app.state.classeur)
+
+
+class RelanceManuelleEntree(BaseModel):
+    client_id: str = Field(min_length=1, max_length=30)
+    canal: str | None = Field(None, pattern="^(WHATSAPP|EMAIL)$")
+    facture_ids: list[str] | None = Field(None, max_length=50)
+    commentaire: str | None = Field(None, max_length=200)
+
+
+@routeur.post("/relances/manuelle", status_code=201,
+              summary="Relance instantanée d'un client, message rédigé par le LLM (201, ou 200 "
+                      "en cas de rejeu)")
+def relance_manuelle(corps: RelanceManuelleEntree, request: Request, reponse: Response,
+                     u: Utilisateur = Depends(authentifie),
+                     conn: sqlite3.Connection = Depends(get_conn)) -> dict:
+    res = svc.relancer_manuellement(conn, corps.client_id, corps.canal, corps.facture_ids,
+                                    corps.commentaire, utilisateur(u.id),
+                                    request.app.state.classeur)
+    if res["deja_fait"]:
+        reponse.status_code = 200
+    return {**res, "relance": svc.lire_relance(conn, res["relance_id"])}
+
+
+@routeur.get("/redactions", summary="Rédactions de courriels générées par le LLM (cache)")
+def redactions(statut: str | None = Query(None, pattern="^(A_RELIRE|RELUE)$"),
+               page: Page = Depends(), _: Utilisateur = Depends(authentifie),
+               conn: sqlite3.Connection = Depends(get_conn)) -> dict:
+    return paginer(svc_redaction.lister(conn, statut), page,
+                   {"cle", "cas", "ton", "canal", "statut", "cree_le"})
+
+
+class RelueEntree(BaseModel):
+    cle: str = Field(min_length=1, max_length=200)
+
+
+@routeur.post("/redactions/relue", summary="Marque une rédaction comme relue par une personne")
+def redaction_relue(corps: RelueEntree, u: Utilisateur = Depends(authentifie),
+                    conn: sqlite3.Connection = Depends(get_conn)) -> dict:
+    return svc_redaction.marquer_relue(conn, corps.cle, utilisateur(u.id))
 
 
 @routeur.get("/relances/suspensions", summary="Échéances suspendues avec leur motif")
@@ -56,9 +97,9 @@ def detail(relance_id: str, _: Utilisateur = Depends(authentifie),
 
 @routeur.post("/relances/{relance_id}/valider",
               summary="Valide une relance de gros montant puis revérifie et envoie")
-def valider(relance_id: str, u: Utilisateur = Depends(exiger("VALIDATEUR")),
+def valider(relance_id: str, request: Request, u: Utilisateur = Depends(exiger("VALIDATEUR")),
             conn: sqlite3.Connection = Depends(get_conn)) -> dict:
-    res = svc.valider_relance(conn, relance_id, utilisateur(u.id))
+    res = svc.valider_relance(conn, relance_id, utilisateur(u.id), request.app.state.classeur)
     return {**res, "relance": svc.lire_relance(conn, relance_id)}
 
 

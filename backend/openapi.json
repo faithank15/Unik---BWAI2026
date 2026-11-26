@@ -560,6 +560,75 @@
         "title": "PromesseEntree",
         "type": "object"
       },
+      "RelanceManuelleEntree": {
+        "properties": {
+          "canal": {
+            "anyOf": [
+              {
+                "pattern": "^(WHATSAPP|EMAIL)$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canal"
+          },
+          "client_id": {
+            "maxLength": 30,
+            "minLength": 1,
+            "title": "Client Id",
+            "type": "string"
+          },
+          "commentaire": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commentaire"
+          },
+          "facture_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Facture Ids"
+          }
+        },
+        "required": [
+          "client_id"
+        ],
+        "title": "RelanceManuelleEntree",
+        "type": "object"
+      },
+      "RelueEntree": {
+        "properties": {
+          "cle": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Cle",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cle"
+        ],
+        "title": "RelueEntree",
+        "type": "object"
+      },
       "ResolutionEntree": {
         "properties": {
           "commentaire": {
@@ -3643,6 +3712,142 @@
         ]
       }
     },
+    "/api/redactions": {
+      "get": {
+        "operationId": "redactions_api_redactions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "statut",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(A_RELIRE|RELUE)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Statut"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Redactions Api Redactions Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rédactions de courriels générées par le LLM (cache)",
+        "tags": [
+          "Relances et canaux simulés"
+        ]
+      }
+    },
+    "/api/redactions/relue": {
+      "post": {
+        "operationId": "redaction_relue_api_redactions_relue_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelueEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Redaction Relue Api Redactions Relue Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Marque une rédaction comme relue par une personne",
+        "tags": [
+          "Relances et canaux simulés"
+        ]
+      }
+    },
     "/api/relances": {
       "get": {
         "operationId": "liste_api_relances_get",
@@ -3803,6 +4008,49 @@
           }
         },
         "summary": "Revérifie et envoie les relances PLANIFIEE du jour",
+        "tags": [
+          "Relances et canaux simulés"
+        ]
+      }
+    },
+    "/api/relances/manuelle": {
+      "post": {
+        "operationId": "relance_manuelle_api_relances_manuelle_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelanceManuelleEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Relance Manuelle Api Relances Manuelle Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Relance instantanée d'un client, message rédigé par le LLM (201, ou 200 en cas de rejeu)",
         "tags": [
           "Relances et canaux simulés"
         ]

@@ -108,6 +108,9 @@ def _historique_par_client(conn: sqlite3.Connection,
     return {c: (a, b) for c, (a, b) in stats.items()}
 
 
+historique_par_client = _historique_par_client
+
+
 def priorisation(conn: sqlite3.Connection) -> list[dict]:
     """Factures ECHUE classées avec la décomposition de leur score."""
     factures = factures_calculees(conn)

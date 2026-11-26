@@ -62,7 +62,8 @@ class AvancerEntree(BaseModel):
 
 
 @routeur.post("/admin/avancer", summary="Avance la date de référence (avec exécution facultative)")
-def avancer(corps: AvancerEntree, _h: None = Depends(hooks_actifs),
+def avancer(corps: AvancerEntree, request: Request, _h: None = Depends(hooks_actifs),
             u: Utilisateur = Depends(exiger("VALIDATEUR")),
             conn: sqlite3.Connection = Depends(get_conn)) -> dict:
-    return relances.avancer(conn, corps.jours, corps.executer, utilisateur(u.id))
+    return relances.avancer(conn, corps.jours, corps.executer, utilisateur(u.id),
+                            request.app.state.classeur)

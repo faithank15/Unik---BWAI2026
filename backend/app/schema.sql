@@ -222,7 +222,28 @@ CREATE TABLE relances (
   contenu         TEXT,
   valide_par      TEXT REFERENCES utilisateurs(id),
   cle_idempotence TEXT NOT NULL UNIQUE,
-  traitement_id   TEXT REFERENCES traitements_lot(id)
+  traitement_id   TEXT REFERENCES traitements_lot(id),
+  origine         TEXT NOT NULL DEFAULT 'AUTOMATIQUE'
+                  CHECK (origine IN ('AUTOMATIQUE','MANUELLE')),
+  demandee_par    TEXT REFERENCES utilisateurs(id)   -- relance manuelle : le gestionnaire
+);
+
+-- Rédactions de courriels générées par le LLM, réutilisées pour tous les clients concernés
+-- (cas, étape, canal, version de consigne). Un humain peut les relire avant le gel.
+CREATE TABLE redactions (
+  cle            TEXT PRIMARY KEY,
+  cas            TEXT NOT NULL,
+  ton            TEXT NOT NULL,
+  canal          TEXT NOT NULL,
+  nb_factures    TEXT NOT NULL CHECK (nb_factures IN ('UNE','PLUSIEURS')),
+  version        TEXT NOT NULL,
+  modele_version TEXT NOT NULL,
+  objet          TEXT NOT NULL,
+  introduction   TEXT NOT NULL,
+  conclusion     TEXT NOT NULL,
+  ton_applique   TEXT NOT NULL,
+  statut         TEXT NOT NULL DEFAULT 'A_RELIRE' CHECK (statut IN ('A_RELIRE','RELUE')),
+  cree_le        TEXT NOT NULL
 );
 
 CREATE TABLE relance_lignes (

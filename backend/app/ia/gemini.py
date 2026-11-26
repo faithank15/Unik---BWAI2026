@@ -8,7 +8,8 @@ message d'erreur.
 """
 import httpx
 
-from app.ia.adaptateur import construire_prompt
+from app.domain.redaction import TONS
+from app.ia.adaptateur import construire_prompt, construire_prompt_redaction
 from app.ia.validation import CATEGORIES
 
 URL = "https://generativelanguage.googleapis.com/v1beta/models/{modele}:generateContent"
@@ -29,6 +30,21 @@ SCHEMA = {
 }
 
 
+SCHEMA_REDACTION = {
+    "type": "OBJECT",
+    "properties": {
+        "objet": {"type": "STRING"},
+        "introduction": {"type": "STRING"},
+        "conclusion": {"type": "STRING"},
+        "ton_applique": {"type": "STRING", "enum": list(TONS)},
+    },
+    "required": ["objet", "introduction", "conclusion", "ton_applique"],
+}
+
+
+JETONS_SORTIE_REDACTION = 4096
+
+
 class ReponseVide(Exception):
     """Le modèle n'a renvoyé aucun texte exploitable (blocage, coupure, réponse vide)."""
 
@@ -40,18 +56,32 @@ class ClientGemini:
         self._reflexion, self._max = niveau_reflexion, max_jetons_sortie
         self.dernier_usage: dict | None = None     # jetons de la dernière réponse (coûts)
 
-    def corps(self, entree: dict) -> dict:
-        config: dict = {"temperature": 0, "maxOutputTokens": self._max,
-                        "responseMimeType": "application/json", "responseSchema": SCHEMA}
+    def _corps(self, prompt: str, schema: dict, max_jetons: int | None = None) -> dict:
+        config: dict = {"temperature": 0, "maxOutputTokens": max_jetons or self._max,
+                        "responseMimeType": "application/json", "responseSchema": schema}
         if self._reflexion:
             config["thinkingConfig"] = {"thinkingLevel": self._reflexion}
-        return {"contents": [{"parts": [{"text": construire_prompt(entree)}]}],
-                "generationConfig": config}
+        return {"contents": [{"parts": [{"text": prompt}]}], "generationConfig": config}
+
+    def corps(self, entree: dict) -> dict:
+        return self._corps(construire_prompt(entree), SCHEMA)
+
+    def corps_redaction(self, contexte: dict) -> dict:
+        # La réflexion du modèle consomme ~1 000 jetons avant la réponse : une limite de 1 024
+        # tronquait le JSON (mesuré sur 40 combinaisons). La rédaction demande une marge large.
+        return self._corps(construire_prompt_redaction(contexte), SCHEMA_REDACTION,
+                           max(self._max, JETONS_SORTIE_REDACTION))
 
     def classer(self, entree: dict) -> str:
+        return self._appeler(self.corps(entree))
+
+    def rediger(self, contexte: dict) -> str:
+        return self._appeler(self.corps_redaction(contexte))
+
+    def _appeler(self, corps: dict) -> str:
         try:
             r = httpx.post(URL.format(modele=self._modele), timeout=self._timeout,
-                           headers={"x-goog-api-key": self._cle}, json=self.corps(entree))
+                           headers={"x-goog-api-key": self._cle}, json=corps)
             r.raise_for_status()
         except httpx.HTTPStatusError as e:
             # le détail de l'erreur ne contient jamais la clé (elle est dans un en-tête)

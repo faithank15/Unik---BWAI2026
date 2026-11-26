@@ -28,7 +28,7 @@ def test_N01_les_routes_exposees_sont_exactement_celles_de_la_section_13():
     attendues = set(MATRICE)
     assert exposees - attendues == set(), f"routes en trop : {sorted(exposees - attendues)}"
     assert attendues - exposees == set(), f"routes manquantes : {sorted(attendues - exposees)}"
-    assert len(exposees) == 59
+    assert len(exposees) == 62      # 59 de la section 13 + relance manuelle et 2 de rédactions
 
 
 def test_N05_openapi_json_exporte_identique_a_l_application():

@@ -31,6 +31,42 @@ class FauxLLM:
         return rep
 
 
+class FauxRedacteur(FauxLLM):
+    """Faux LLM qui sait aussi rédiger : `programmer_redaction(cle, sortie)` par cas|ton|canal."""
+
+    def __init__(self, redaction: Any = None, **kw: Any):
+        super().__init__(**kw)
+        self.redaction = redaction
+        self.redactions: dict[str, Any] = {}
+        self.contextes: list[dict] = []
+
+    def programmer_redaction(self, cas: str, reponse: Any) -> None:
+        self.redactions[cas] = reponse
+
+    def rediger(self, contexte: dict) -> Any:
+        self.contextes.append(contexte)
+        rep = self.redactions.get(contexte["cas"], self.redaction)
+        if rep is None:
+            raise Indisponible("Pas de rédaction programmée.")
+        if isinstance(rep, list):
+            rep = rep.pop(0) if len(rep) > 1 else rep[0]
+        if isinstance(rep, Exception):
+            raise rep
+        return rep
+
+
+def redaction_valide(**kw: Any) -> dict:
+    """Sortie valide du rédacteur, pour les tests (variables seulement, aucun chiffre)."""
+    base = {"objet": "Rappel de règlement : facture {numero_facture}",
+            "introduction": "Sauf erreur de notre part, la facture {numero_facture} échue le "
+                            "{date_echeance} reste à régler. Nous supposons un simple oubli.",
+            "conclusion": "Pourriez-vous procéder au règlement de {solde} d'ici le "
+                          "{date_limite} ?",
+            "ton_applique": "COURTOIS"}
+    base.update(kw)
+    return base
+
+
 def sortie(categorie: str, confiance: float = 0.95, **kw: Any) -> dict:
     """Sortie valide du classifieur, pour les tests."""
     base = {"categorie": categorie, "confiance": confiance, "copie_demandee": False,
