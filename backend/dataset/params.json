@@ -1,0 +1,23 @@
+{
+  "seed": 20261215,
+  "date_reference": "2026-12-15",
+  "seuil_gros_montant": 500000,
+  "jours_p": -3,
+  "jours_r1": 1,
+  "jours_r2": 7,
+  "jours_r3": 15,
+  "espacement_normal_jours": 2,
+  "espacement_rattrapage_jours": 5,
+  "delai_escalade_jours": 5,
+  "marge_promesse_jours": 2,
+  "plafond_promesse_jours": 30,
+  "plafond_retard_jours": 30,
+  "plafond_solde": 1000000,
+  "poids_anciennete": 40,
+  "poids_solde": 35,
+  "poids_historique": 25,
+  "historique_neutre_points": 12.5,
+  "rappel_preventif_actif": true,
+  "nom_entreprise_emettrice": "Entreprise Démo",
+  "fin_simulation": "2027-01-05"
+}

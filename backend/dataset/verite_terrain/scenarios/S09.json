@@ -1,0 +1,82 @@
+{
+  "id": "S09",
+  "titre": "Gros montant : validation humaine avant envoi",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial"
+  ],
+  "actions": [
+    "POST /api/relances/planifier",
+    "POST /api/relances/envoyer",
+    "POST /api/relances/{id}/valider (VALIDATEUR)"
+  ],
+  "attendu": {
+    "en_attente_validation": [
+      {
+        "client": "CLI-0016",
+        "canal": "EMAIL",
+        "etape": "R1",
+        "ton": "R1",
+        "decision": "EN_ATTENTE_VALIDATION",
+        "total": 1200000,
+        "lignes": [
+          [
+            "ECH-0140",
+            "R1"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0017",
+        "canal": "WHATSAPP",
+        "etape": "R1",
+        "ton": "R1",
+        "decision": "EN_ATTENTE_VALIDATION",
+        "total": 2400000,
+        "lignes": [
+          [
+            "ECH-0141",
+            "R1"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0018",
+        "canal": "EMAIL",
+        "etape": "R1",
+        "ton": "R1",
+        "decision": "EN_ATTENTE_VALIDATION",
+        "total": 750000,
+        "lignes": [
+          [
+            "ECH-0142",
+            "R1"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0019",
+        "canal": "WHATSAPP",
+        "etape": "GROUPE",
+        "ton": "R1",
+        "decision": "EN_ATTENTE_VALIDATION",
+        "total": 600000,
+        "lignes": [
+          [
+            "ECH-0143",
+            "R1"
+          ],
+          [
+            "ECH-0144",
+            "R1"
+          ]
+        ]
+      }
+    ],
+    "nb": 4,
+    "dont_regroupes": 1,
+    "envoi_avant_validation": 0,
+    "revue_type": "GROS_MONTANT",
+    "validation_par": "VALIDATEUR (un GESTIONNAIRE reçoit 403)"
+  }
+}

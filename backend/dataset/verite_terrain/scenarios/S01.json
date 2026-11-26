@@ -1,0 +1,26 @@
+{
+  "id": "S01",
+  "titre": "Import nominal rejoué deux fois : aucun doublon",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "base vide (reset sans chargement)",
+    "accords_echeancier.csv chargé avant l'import (voir QUESTIONS.md)"
+  ],
+  "actions": [
+    "POST /api/imports (lot_nominal : clients, preferences_contact, factures, echeances)",
+    "POST /api/imports avec les mêmes fichiers"
+  ],
+  "attendu": {
+    "premiere": {
+      "statut": "TERMINE",
+      "clients": 30,
+      "factures": 120,
+      "echeances": 147,
+      "rejets": 0
+    },
+    "seconde": {
+      "statut": "DEJA_IMPORTE",
+      "creations": 0
+    }
+  }
+}

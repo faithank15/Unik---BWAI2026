@@ -1,0 +1,38 @@
+{
+  "id": "S20",
+  "titre": "Consentement absent ou canal invalide : revue",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial"
+  ],
+  "actions": [
+    "POST /api/relances/planifier"
+  ],
+  "attendu": {
+    "envois_pour": [
+      "CLI-0027",
+      "CLI-0028"
+    ],
+    "revues": [
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0027",
+        "canal": "",
+        "etape": "",
+        "echeances": "ECH-0077",
+        "decision": "REVUE",
+        "motif": "CONSENTEMENT_ABSENT"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0028",
+        "canal": "",
+        "etape": "",
+        "echeances": "ECH-0078",
+        "decision": "REVUE",
+        "motif": "CANAL_INVALIDE"
+      }
+    ],
+    "envois": 0
+  }
+}

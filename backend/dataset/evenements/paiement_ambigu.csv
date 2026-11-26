@@ -1,0 +1,2 @@
+id,client_id,date_paiement,montant,mode,reference_externe,source,statut,references_indiquees
+PAY-0085,,2026-12-15,98000,MOBILE_MONEY,MM-SIM-2026-900002,SIMULE,RECU,

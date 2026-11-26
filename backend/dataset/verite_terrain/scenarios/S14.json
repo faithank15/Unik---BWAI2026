@@ -1,0 +1,62 @@
+{
+  "id": "S14",
+  "titre": "Import tardif : R1 puis R2 et R3 espacés",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial"
+  ],
+  "actions": [
+    "planifier et envoyer chaque jour du 2026-12-15 au 2027-01-05"
+  ],
+  "attendu": {
+    "facture_id": "FAC-2026-0067",
+    "retard_jours_au_15_12": 45,
+    "decisions": [
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0005",
+        "canal": "WHATSAPP",
+        "etape": "P",
+        "echeances": "ECH-0079:P",
+        "decision": "SAUTEE",
+        "motif": "P_APRES_ECHEANCE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0005",
+        "canal": "WHATSAPP",
+        "etape": "R1",
+        "echeances": "ECH-0079:R1",
+        "decision": "PREPAREE",
+        "motif": ""
+      },
+      {
+        "date": "2026-12-21",
+        "client": "CLI-0005",
+        "canal": "WHATSAPP",
+        "etape": "R2",
+        "echeances": "ECH-0079:R2",
+        "decision": "PREPAREE",
+        "motif": ""
+      },
+      {
+        "date": "2026-12-26",
+        "client": "CLI-0005",
+        "canal": "WHATSAPP",
+        "etape": "R3",
+        "echeances": "ECH-0079:R3",
+        "decision": "PREPAREE",
+        "motif": ""
+      },
+      {
+        "date": "2026-12-31",
+        "client": "CLI-0005",
+        "canal": "WHATSAPP",
+        "etape": "",
+        "echeances": "ECH-0079",
+        "decision": "REVUE",
+        "motif": "ESCALADE"
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "S23",
+  "titre": "API du LLM indisponible : messages à classer",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "PUT /api/parametres/simulation_llm_indisponible = true"
+  ],
+  "actions": [
+    "POST /api/messages × 5",
+    "POST /api/messages/{id}/classer (échec)",
+    "PUT /api/parametres/simulation_llm_indisponible = false",
+    "attendre le worker ou classer"
+  ],
+  "attendu": {
+    "messages": [
+      "MSG-0011",
+      "MSG-0016",
+      "MSG-0021",
+      "MSG-0026",
+      "MSG-0029"
+    ],
+    "statut_apres_panne": "A_CLASSER",
+    "relances_suspendues": "SUSPENDU_MESSAGE_EN_ATTENTE",
+    "reste_du_systeme": "calculs, paiements et relances fonctionnent",
+    "apres_retablissement": "classés"
+  }
+}

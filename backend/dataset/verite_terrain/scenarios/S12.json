@@ -1,0 +1,45 @@
+{
+  "id": "S12",
+  "titre": "Échéancier : relance sur la tranche manquée seulement",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial"
+  ],
+  "actions": [
+    "POST /api/relances/planifier"
+  ],
+  "attendu": {
+    "tranches_manquees": [
+      {
+        "facture_id": "FAC-2026-0102",
+        "echeance_id": "ECH-0119",
+        "solde": 100000
+      },
+      {
+        "facture_id": "FAC-2026-0103",
+        "echeance_id": "ECH-0123",
+        "solde": 200000
+      }
+    ],
+    "relances": [
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0029",
+        "canal": "WHATSAPP",
+        "etape": "R1",
+        "echeances": "ECH-0119:R1",
+        "decision": "PREPAREE",
+        "motif": ""
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0030",
+        "canal": "EMAIL",
+        "etape": "R1",
+        "echeances": "ECH-0123:R1",
+        "decision": "PREPAREE",
+        "motif": ""
+      }
+    ]
+  }
+}

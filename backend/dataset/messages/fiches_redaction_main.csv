@@ -1,0 +1,61 @@
+message_id,client_id,canal,categorie_cible,contexte,difficultes_a_inclure,split
+MSG-0341,CLI-0023,WHATSAPP,PROMESSE_PAIEMENT,Le client répond à une relance R3 sur sa facture échue et s'engage à payer à une date qu'il formule à sa façon. Client CLI-0023.,NEGATION,DEV
+MSG-0342,CLI-0005,WHATSAPP,PROMESSE_PAIEMENT,Le client répond à une relance R1 sur sa facture échue et s'engage à payer à une date qu'il formule à sa façon. Client CLI-0005.,,DEV
+MSG-0343,CLI-0030,WHATSAPP,PROMESSE_PAIEMENT,Le client répond à une relance R2 sur sa facture échue et s'engage à payer à une date qu'il formule à sa façon. Client CLI-0030.,DATE_RELATIVE,DEV
+MSG-0344,CLI-0025,EMAIL,AUTRE_INCERTAIN,"Le client répond à côté du sujet ou de façon ambiguë (aucune intention claire de payer, contester ou demander un document). Client CLI-0025.",MULTI_INTENTION,DEV
+MSG-0345,CLI-0013,EMAIL,AUTRE_INCERTAIN,"Le client répond à côté du sujet ou de façon ambiguë (aucune intention claire de payer, contester ou demander un document). Client CLI-0013.",,DEV
+MSG-0346,CLI-0019,WHATSAPP,AUTRE_INCERTAIN,"Le client répond à côté du sujet ou de façon ambiguë (aucune intention claire de payer, contester ou demander un document). Client CLI-0019.",MAUVAISE_REFERENCE,DEV
+MSG-0347,CLI-0003,WHATSAPP,DEJA_PAYE,"Le client affirme avoir déjà réglé la facture réclamée, avec ou sans preuve ni référence. Client CLI-0003.",,DEV
+MSG-0348,CLI-0027,WHATSAPP,DEJA_PAYE,"Le client affirme avoir déjà réglé la facture réclamée, avec ou sans preuve ni référence. Client CLI-0027.",TIERS,DEV
+MSG-0349,CLI-0010,EMAIL,CONTESTATION,"Le client conteste le montant, la livraison, la qualité ou un doublon de facturation. Client CLI-0010.",HORS_SUJET_OU_VIDE,DEV
+MSG-0350,CLI-0011,EMAIL,CONTESTATION,"Le client conteste le montant, la livraison, la qualité ou un doublon de facturation. Client CLI-0011.",,DEV
+MSG-0351,CLI-0007,WHATSAPP,DEMANDE_ECHEANCIER,Le client demande à payer en plusieurs tranches. Client CLI-0007.,LANGUE_LOCALE,DEV
+MSG-0352,CLI-0008,WHATSAPP,DEMANDE_ECHEANCIER,Le client demande à payer en plusieurs tranches. Client CLI-0008.,,DEV
+MSG-0353,CLI-0016,WHATSAPP,DEMANDE_DELAI,"Le client demande un délai, avec ou sans date précise. Client CLI-0016.",INJECTION,DEV
+MSG-0354,CLI-0014,EMAIL,DEMANDE_DELAI,"Le client demande un délai, avec ou sans date précise. Client CLI-0014.",NEGATION,DEV
+MSG-0355,CLI-0017,EMAIL,DEMANDE_COPIE_FACTURE,"Le client réclame la facture, un duplicata ou un relevé, sans autre intention. Client CLI-0017.",,DEV
+MSG-0356,CLI-0022,WHATSAPP,PROMESSE_PAIEMENT,Le client répond à une relance R3 sur sa facture échue et s'engage à payer à une date qu'il formule à sa façon. Client CLI-0022.,DATE_RELATIVE,TEST
+MSG-0357,CLI-0015,WHATSAPP,PROMESSE_PAIEMENT,Le client répond à une relance R1 sur sa facture échue et s'engage à payer à une date qu'il formule à sa façon. Client CLI-0015.,,TEST
+MSG-0358,CLI-0021,WHATSAPP,PROMESSE_PAIEMENT,Le client répond à une relance R2 sur sa facture échue et s'engage à payer à une date qu'il formule à sa façon. Client CLI-0021.,MULTI_INTENTION,TEST
+MSG-0359,CLI-0012,EMAIL,PROMESSE_PAIEMENT,Le client répond à une relance R3 sur sa facture échue et s'engage à payer à une date qu'il formule à sa façon. Client CLI-0012.,MAUVAISE_REFERENCE,TEST
+MSG-0360,CLI-0029,EMAIL,PROMESSE_PAIEMENT,Le client répond à une relance R1 sur sa facture échue et s'engage à payer à une date qu'il formule à sa façon. Client CLI-0029.,,TEST
+MSG-0361,CLI-0002,WHATSAPP,PROMESSE_PAIEMENT,Le client répond à une relance R2 sur sa facture échue et s'engage à payer à une date qu'il formule à sa façon. Client CLI-0002.,TIERS,TEST
+MSG-0362,CLI-0004,WHATSAPP,PROMESSE_PAIEMENT,Le client répond à une relance R3 sur sa facture échue et s'engage à payer à une date qu'il formule à sa façon. Client CLI-0004.,,TEST
+MSG-0363,CLI-0001,WHATSAPP,PROMESSE_PAIEMENT,Le client répond à une relance R1 sur sa facture échue et s'engage à payer à une date qu'il formule à sa façon. Client CLI-0001.,HORS_SUJET_OU_VIDE,TEST
+MSG-0364,CLI-0006,EMAIL,PROMESSE_PAIEMENT,Le client répond à une relance R2 sur sa facture échue et s'engage à payer à une date qu'il formule à sa façon. Client CLI-0006.,LANGUE_LOCALE,TEST
+MSG-0365,CLI-0028,EMAIL,AUTRE_INCERTAIN,"Le client répond à côté du sujet ou de façon ambiguë (aucune intention claire de payer, contester ou demander un document). Client CLI-0028.",,TEST
+MSG-0366,CLI-0009,WHATSAPP,AUTRE_INCERTAIN,"Le client répond à côté du sujet ou de façon ambiguë (aucune intention claire de payer, contester ou demander un document). Client CLI-0009.",INJECTION,TEST
+MSG-0367,CLI-0018,WHATSAPP,AUTRE_INCERTAIN,"Le client répond à côté du sujet ou de façon ambiguë (aucune intention claire de payer, contester ou demander un document). Client CLI-0018.",,TEST
+MSG-0368,CLI-0026,WHATSAPP,AUTRE_INCERTAIN,"Le client répond à côté du sujet ou de façon ambiguë (aucune intention claire de payer, contester ou demander un document). Client CLI-0026.",NEGATION,TEST
+MSG-0369,CLI-0020,EMAIL,AUTRE_INCERTAIN,"Le client répond à côté du sujet ou de façon ambiguë (aucune intention claire de payer, contester ou demander un document). Client CLI-0020.",DATE_RELATIVE,TEST
+MSG-0370,CLI-0023,EMAIL,AUTRE_INCERTAIN,"Le client répond à côté du sujet ou de façon ambiguë (aucune intention claire de payer, contester ou demander un document). Client CLI-0023.",,TEST
+MSG-0371,CLI-0005,WHATSAPP,AUTRE_INCERTAIN,"Le client répond à côté du sujet ou de façon ambiguë (aucune intention claire de payer, contester ou demander un document). Client CLI-0005.",MULTI_INTENTION,TEST
+MSG-0372,CLI-0030,WHATSAPP,AUTRE_INCERTAIN,"Le client répond à côté du sujet ou de façon ambiguë (aucune intention claire de payer, contester ou demander un document). Client CLI-0030.",,TEST
+MSG-0373,CLI-0025,WHATSAPP,AUTRE_INCERTAIN,"Le client répond à côté du sujet ou de façon ambiguë (aucune intention claire de payer, contester ou demander un document). Client CLI-0025.",MAUVAISE_REFERENCE,TEST
+MSG-0374,CLI-0013,EMAIL,DEJA_PAYE,"Le client affirme avoir déjà réglé la facture réclamée, avec ou sans preuve ni référence. Client CLI-0013.",TIERS,TEST
+MSG-0375,CLI-0019,EMAIL,DEJA_PAYE,"Le client affirme avoir déjà réglé la facture réclamée, avec ou sans preuve ni référence. Client CLI-0019.",,TEST
+MSG-0376,CLI-0003,WHATSAPP,DEJA_PAYE,"Le client affirme avoir déjà réglé la facture réclamée, avec ou sans preuve ni référence. Client CLI-0003.",HORS_SUJET_OU_VIDE,TEST
+MSG-0377,CLI-0027,WHATSAPP,DEJA_PAYE,"Le client affirme avoir déjà réglé la facture réclamée, avec ou sans preuve ni référence. Client CLI-0027.",,TEST
+MSG-0378,CLI-0010,WHATSAPP,DEJA_PAYE,"Le client affirme avoir déjà réglé la facture réclamée, avec ou sans preuve ni référence. Client CLI-0010.",LANGUE_LOCALE,TEST
+MSG-0379,CLI-0011,EMAIL,DEJA_PAYE,"Le client affirme avoir déjà réglé la facture réclamée, avec ou sans preuve ni référence. Client CLI-0011.",INJECTION,TEST
+MSG-0380,CLI-0007,EMAIL,DEJA_PAYE,"Le client affirme avoir déjà réglé la facture réclamée, avec ou sans preuve ni référence. Client CLI-0007.",,TEST
+MSG-0381,CLI-0008,WHATSAPP,CONTESTATION,"Le client conteste le montant, la livraison, la qualité ou un doublon de facturation. Client CLI-0008.",,TEST
+MSG-0382,CLI-0016,WHATSAPP,CONTESTATION,"Le client conteste le montant, la livraison, la qualité ou un doublon de facturation. Client CLI-0016.",,TEST
+MSG-0383,CLI-0014,WHATSAPP,CONTESTATION,"Le client conteste le montant, la livraison, la qualité ou un doublon de facturation. Client CLI-0014.",,TEST
+MSG-0384,CLI-0017,EMAIL,CONTESTATION,"Le client conteste le montant, la livraison, la qualité ou un doublon de facturation. Client CLI-0017.",,TEST
+MSG-0385,CLI-0022,EMAIL,CONTESTATION,"Le client conteste le montant, la livraison, la qualité ou un doublon de facturation. Client CLI-0022.",,TEST
+MSG-0386,CLI-0015,WHATSAPP,CONTESTATION,"Le client conteste le montant, la livraison, la qualité ou un doublon de facturation. Client CLI-0015.",,TEST
+MSG-0387,CLI-0021,WHATSAPP,CONTESTATION,"Le client conteste le montant, la livraison, la qualité ou un doublon de facturation. Client CLI-0021.",,TEST
+MSG-0388,CLI-0012,WHATSAPP,DEMANDE_ECHEANCIER,Le client demande à payer en plusieurs tranches. Client CLI-0012.,,TEST
+MSG-0389,CLI-0029,EMAIL,DEMANDE_ECHEANCIER,Le client demande à payer en plusieurs tranches. Client CLI-0029.,,TEST
+MSG-0390,CLI-0002,EMAIL,DEMANDE_ECHEANCIER,Le client demande à payer en plusieurs tranches. Client CLI-0002.,,TEST
+MSG-0391,CLI-0004,WHATSAPP,DEMANDE_ECHEANCIER,Le client demande à payer en plusieurs tranches. Client CLI-0004.,,TEST
+MSG-0392,CLI-0001,WHATSAPP,DEMANDE_DELAI,"Le client demande un délai, avec ou sans date précise. Client CLI-0001.",,TEST
+MSG-0393,CLI-0006,WHATSAPP,DEMANDE_DELAI,"Le client demande un délai, avec ou sans date précise. Client CLI-0006.",,TEST
+MSG-0394,CLI-0028,EMAIL,DEMANDE_DELAI,"Le client demande un délai, avec ou sans date précise. Client CLI-0028.",,TEST
+MSG-0395,CLI-0009,EMAIL,DEMANDE_DELAI,"Le client demande un délai, avec ou sans date précise. Client CLI-0009.",,TEST
+MSG-0396,CLI-0018,WHATSAPP,DEMANDE_COPIE_FACTURE,"Le client réclame la facture, un duplicata ou un relevé, sans autre intention. Client CLI-0018.",,TEST
+MSG-0397,CLI-0026,WHATSAPP,DEMANDE_COPIE_FACTURE,"Le client réclame la facture, un duplicata ou un relevé, sans autre intention. Client CLI-0026.",,TEST
+MSG-0398,CLI-0020,WHATSAPP,DEMANDE_COPIE_FACTURE,"Le client réclame la facture, un duplicata ou un relevé, sans autre intention. Client CLI-0020.",,TEST
+MSG-0399,CLI-0023,EMAIL,DEMANDE_COPIE_FACTURE,"Le client réclame la facture, un duplicata ou un relevé, sans autre intention. Client CLI-0023.",,TEST
+MSG-0400,CLI-0005,EMAIL,DEMANDE_COPIE_FACTURE,"Le client réclame la facture, un duplicata ou un relevé, sans autre intention. Client CLI-0005.",,TEST

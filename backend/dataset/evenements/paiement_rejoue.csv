@@ -1,0 +1,2 @@
+id,client_id,date_paiement,montant,mode,reference_externe,source,statut,references_indiquees
+PAY-0001,CLI-0016,2026-08-19,380500,MOBILE_MONEY,MM-SIM-2026-452685,SIMULE,RECU,FA-2026-0417

@@ -1,0 +1,109 @@
+{
+  "id": "S02",
+  "titre": "Import avec défauts : rejets motivés",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "lot_nominal importé"
+  ],
+  "actions": [
+    "POST /api/imports (lot_defectueux)"
+  ],
+  "attendu": {
+    "nb_lignes": 25,
+    "nb_acceptees": 10,
+    "nb_rejets": 15,
+    "rejets_attendus": "lot_defectueux/rejets_attendus.csv",
+    "rejets": [
+      {
+        "fichier": "clients.csv",
+        "ligne": 3,
+        "motif_code": "EMAIL_MAL_FORME",
+        "detail": "email contact@client-9004 invalide."
+      },
+      {
+        "fichier": "clients.csv",
+        "ligne": 4,
+        "motif_code": "TELEPHONE_MAL_FORME",
+        "detail": "whatsapp +22997123 hors format (+229 suivi de 10 chiffres)."
+      },
+      {
+        "fichier": "echeances.csv",
+        "ligne": 11,
+        "motif_code": "ECHEANCE_AVANT_EMISSION",
+        "detail": "date_echeance 2026-11-20 est antérieure à date_emission 2026-12-01."
+      },
+      {
+        "fichier": "echeances.csv",
+        "ligne": 13,
+        "motif_code": "MONTANT_NON_POSITIF",
+        "detail": "montant_du doit être strictement positif (valeur : -80000)."
+      },
+      {
+        "fichier": "echeances.csv",
+        "ligne": 16,
+        "motif_code": "DATE_INVALIDE",
+        "detail": "date_echeance 15/12/2026 est mal formatée (attendu AAAA-MM-JJ)."
+      },
+      {
+        "fichier": "factures.csv",
+        "ligne": 3,
+        "motif_code": "MONTANT_NON_POSITIF",
+        "detail": "montant_ttc doit être strictement positif (valeur : 0)."
+      },
+      {
+        "fichier": "factures.csv",
+        "ligne": 6,
+        "motif_code": "DOUBLON_NUMERO",
+        "detail": "Le client CLI-0004 a déjà une facture numéro FA-2026-0412 (FAC-2026-0012)."
+      },
+      {
+        "fichier": "factures.csv",
+        "ligne": 8,
+        "motif_code": "CHAMP_OBLIGATOIRE_VIDE",
+        "detail": "Le champ client_id est vide."
+      },
+      {
+        "fichier": "factures.csv",
+        "ligne": 10,
+        "motif_code": "CHAMP_OBLIGATOIRE_VIDE",
+        "detail": "Le champ date_emission est vide."
+      },
+      {
+        "fichier": "factures.csv",
+        "ligne": 12,
+        "motif_code": "CLIENT_INCONNU",
+        "detail": "Le client CLI-9999 est absent du fichier clients et du portefeuille."
+      },
+      {
+        "fichier": "factures.csv",
+        "ligne": 13,
+        "motif_code": "DOUBLON_NUMERO",
+        "detail": "Le client CLI-0019 a déjà une facture numéro FA-2026-0420 (FAC-2026-0020)."
+      },
+      {
+        "fichier": "factures.csv",
+        "ligne": 14,
+        "motif_code": "DATE_INVALIDE",
+        "detail": "date_emission 2026-02-30 n'existe pas."
+      },
+      {
+        "fichier": "factures.csv",
+        "ligne": 16,
+        "motif_code": "DOUBLON_EXACT",
+        "detail": "Ligne identique à la facture FAC-2026-0010 déjà présente."
+      },
+      {
+        "fichier": "factures.csv",
+        "ligne": 19,
+        "motif_code": "SOMME_ECHEANCES_DIFFERENTE",
+        "detail": "La somme des échéances (120000) diffère du montant_ttc (150000)."
+      },
+      {
+        "fichier": "factures.csv",
+        "ligne": 22,
+        "motif_code": "SOMME_ECHEANCES_DIFFERENTE",
+        "detail": "La somme des échéances (180000) diffère du montant_ttc (200000)."
+      }
+    ]
+  }
+}

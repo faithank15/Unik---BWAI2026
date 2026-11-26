@@ -1,0 +1,5 @@
+id,raison_sociale,secteur,ville,email,whatsapp,actif
+CLI-9002,Boutique Alladatin,traiteur,Bohicon,contact@client-9002.example,,1
+CLI-9004,Papeterie Zossou,imprimerie,Lokossa,contact@client-9004,,1
+CLI-9003,Atelier Bocco et Fils,pièces automobiles,Parakou,,+22997123,1
+CLI-9001,Sodjinou Équipements SARL,BTP,Cotonou,contact@client-9001.example,+2290100009001,1

@@ -1,0 +1,232 @@
+{
+  "id": "S19",
+  "titre": "Reprise après interruption en plein lot",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial",
+    "au moins 10 messages éligibles hors validation humaine"
+  ],
+  "actions": [
+    "POST /api/relances/planifier",
+    "PUT /api/parametres/simulation_interruption_apres = 5",
+    "POST /api/relances/envoyer (lot INTERROMPU après 5)",
+    "PUT /api/parametres/simulation_interruption_apres = vide",
+    "POST /api/relances/envoyer (reprise)"
+  ],
+  "attendu": {
+    "relances_a_envoyer": 14,
+    "apres_interruption": 5,
+    "apres_reprise": 14,
+    "doublons": 0,
+    "relances": [
+      {
+        "client": "CLI-0001",
+        "canal": "WHATSAPP",
+        "etape": "R1",
+        "ton": "R1",
+        "decision": "PREPAREE",
+        "total": 99000,
+        "lignes": [
+          [
+            "ECH-0073",
+            "R1"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0002",
+        "canal": "EMAIL",
+        "etape": "R1",
+        "ton": "R1",
+        "decision": "PREPAREE",
+        "total": 450000,
+        "lignes": [
+          [
+            "ECH-0074",
+            "R1"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0003",
+        "canal": "WHATSAPP",
+        "etape": "R1",
+        "ton": "R1",
+        "decision": "PREPAREE",
+        "total": 243000,
+        "lignes": [
+          [
+            "ECH-0075",
+            "R1"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0004",
+        "canal": "EMAIL",
+        "etape": "R1",
+        "ton": "R1",
+        "decision": "PREPAREE",
+        "total": 302500,
+        "lignes": [
+          [
+            "ECH-0076",
+            "R1"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0005",
+        "canal": "WHATSAPP",
+        "etape": "R1",
+        "ton": "R1",
+        "decision": "PREPAREE",
+        "total": 228500,
+        "lignes": [
+          [
+            "ECH-0079",
+            "R1"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0006",
+        "canal": "EMAIL",
+        "etape": "R1",
+        "ton": "R1",
+        "decision": "PREPAREE",
+        "total": 364500,
+        "lignes": [
+          [
+            "ECH-0080",
+            "R1"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0007",
+        "canal": "WHATSAPP",
+        "etape": "GROUPE",
+        "ton": "R3",
+        "decision": "PREPAREE",
+        "total": 431500,
+        "lignes": [
+          [
+            "ECH-0081",
+            "R1"
+          ],
+          [
+            "ECH-0138",
+            "R3"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0008",
+        "canal": "EMAIL",
+        "etape": "GROUPE",
+        "ton": "R2",
+        "decision": "PREPAREE",
+        "total": 101000,
+        "lignes": [
+          [
+            "ECH-0082",
+            "R1"
+          ],
+          [
+            "ECH-0139",
+            "R2"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0015",
+        "canal": "WHATSAPP",
+        "etape": "R3",
+        "ton": "R3",
+        "decision": "PREPAREE",
+        "total": 75500,
+        "lignes": [
+          [
+            "ECH-0111",
+            "R3"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0021",
+        "canal": "WHATSAPP",
+        "etape": "R1",
+        "ton": "R1",
+        "decision": "PREPAREE",
+        "total": 103500,
+        "lignes": [
+          [
+            "ECH-0083",
+            "R1"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0024",
+        "canal": "WHATSAPP",
+        "etape": "GROUPE",
+        "ton": "P",
+        "decision": "PREPAREE",
+        "total": 100000,
+        "lignes": [
+          [
+            "ECH-0046",
+            "P"
+          ],
+          [
+            "ECH-0047",
+            "P"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0025",
+        "canal": "EMAIL",
+        "etape": "R1",
+        "ton": "R1",
+        "decision": "PREPAREE",
+        "total": 155500,
+        "lignes": [
+          [
+            "ECH-0084",
+            "R1"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0029",
+        "canal": "WHATSAPP",
+        "etape": "R1",
+        "ton": "R1",
+        "decision": "PREPAREE",
+        "total": 100000,
+        "lignes": [
+          [
+            "ECH-0119",
+            "R1"
+          ]
+        ]
+      },
+      {
+        "client": "CLI-0030",
+        "canal": "EMAIL",
+        "etape": "R1",
+        "ton": "R1",
+        "decision": "PREPAREE",
+        "total": 200000,
+        "lignes": [
+          [
+            "ECH-0123",
+            "R1"
+          ]
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+fichier,ligne,motif_code,detail
+clients.csv,3,EMAIL_MAL_FORME,email contact@client-9004 invalide.
+clients.csv,4,TELEPHONE_MAL_FORME,whatsapp +22997123 hors format (+229 suivi de 10 chiffres).
+echeances.csv,11,ECHEANCE_AVANT_EMISSION,date_echeance 2026-11-20 est antérieure à date_emission 2026-12-01.
+echeances.csv,13,MONTANT_NON_POSITIF,montant_du doit être strictement positif (valeur : -80000).
+echeances.csv,16,DATE_INVALIDE,date_echeance 15/12/2026 est mal formatée (attendu AAAA-MM-JJ).
+factures.csv,3,MONTANT_NON_POSITIF,montant_ttc doit être strictement positif (valeur : 0).
+factures.csv,6,DOUBLON_NUMERO,Le client CLI-0004 a déjà une facture numéro FA-2026-0412 (FAC-2026-0012).
+factures.csv,8,CHAMP_OBLIGATOIRE_VIDE,Le champ client_id est vide.
+factures.csv,10,CHAMP_OBLIGATOIRE_VIDE,Le champ date_emission est vide.
+factures.csv,12,CLIENT_INCONNU,Le client CLI-9999 est absent du fichier clients et du portefeuille.
+factures.csv,13,DOUBLON_NUMERO,Le client CLI-0019 a déjà une facture numéro FA-2026-0420 (FAC-2026-0020).
+factures.csv,14,DATE_INVALIDE,date_emission 2026-02-30 n'existe pas.
+factures.csv,16,DOUBLON_EXACT,Ligne identique à la facture FAC-2026-0010 déjà présente.
+factures.csv,19,SOMME_ECHEANCES_DIFFERENTE,La somme des échéances (120000) diffère du montant_ttc (150000).
+factures.csv,22,SOMME_ECHEANCES_DIFFERENTE,La somme des échéances (180000) diffère du montant_ttc (200000).

@@ -1,0 +1,18 @@
+{
+  "id": "S06",
+  "titre": "Paiement rejoué : aucune double comptabilisation",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial"
+  ],
+  "actions": [
+    "POST /api/paiements (paiement_rejoue.csv, copie d'un paiement existant)"
+  ],
+  "attendu": {
+    "http": 200,
+    "deja_enregistre": true,
+    "nb_paiements_inchange": 84,
+    "evenement": "PAIEMENT_REJOUE",
+    "paiement": "PAY-0001"
+  }
+}

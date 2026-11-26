@@ -1,0 +1,38 @@
+{
+  "id": "S22",
+  "titre": "Escalade après R3",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial"
+  ],
+  "actions": [
+    "POST /api/relances/planifier"
+  ],
+  "attendu": {
+    "escalades": [
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0015",
+        "canal": "WHATSAPP",
+        "etape": "",
+        "echeances": "ECH-0097",
+        "decision": "REVUE",
+        "motif": "ESCALADE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0020",
+        "canal": "WHATSAPP",
+        "etape": "",
+        "echeances": "ECH-0098",
+        "decision": "REVUE",
+        "motif": "ESCALADE"
+      }
+    ],
+    "factures": [
+      "FAC-2026-0085",
+      "FAC-2026-0086"
+    ],
+    "nouvelles_relances_pour_ces_echeances": 0
+  }
+}

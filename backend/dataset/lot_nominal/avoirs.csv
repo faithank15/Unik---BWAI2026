@@ -1,0 +1,6 @@
+id,facture_id,date,montant,motif
+AVO-0001,FAC-2026-0118,2026-10-09,49500,annulation de facture
+AVO-0002,FAC-2026-0119,2026-10-30,350000,annulation de facture
+AVO-0003,FAC-2026-0120,2026-11-03,143000,annulation de facture
+AVO-0004,FAC-2026-0068,2026-12-01,40500,remise commerciale
+AVO-0005,FAC-2026-0089,2026-12-13,43500,geste commercial

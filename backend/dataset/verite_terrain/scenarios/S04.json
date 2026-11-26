@@ -1,0 +1,31 @@
+{
+  "id": "S04",
+  "titre": "Paiement couvrant plusieurs factures du même client",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial"
+  ],
+  "actions": [
+    "POST /api/paiements (paiement_multifactures.csv)"
+  ],
+  "attendu": {
+    "paiement": "PAY-0085",
+    "affectations": [
+      {
+        "echeance_id": "ECH-0085",
+        "mode": "INDIQUEE",
+        "montant_affecte": 140000
+      },
+      {
+        "echeance_id": "ECH-0086",
+        "mode": "INDIQUEE",
+        "montant_affecte": 54500
+      }
+    ],
+    "factures_soldees": [
+      "FAC-2026-0073",
+      "FAC-2026-0074"
+    ],
+    "reste_non_affecte": 0
+  }
+}

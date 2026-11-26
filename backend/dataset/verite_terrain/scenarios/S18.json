@@ -1,0 +1,21 @@
+{
+  "id": "S18",
+  "titre": "Réponse à faible confiance : revue",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "faux LLM : AUTRE_INCERTAIN ou confiance 0,40"
+  ],
+  "actions": [
+    "POST /api/messages (MSG-0008)",
+    "POST /api/messages/MSG-0008/classer?synchrone=true"
+  ],
+  "attendu": {
+    "message": "MSG-0008",
+    "client": "CLI-0002",
+    "revue": "INCERTAIN",
+    "motif": "CONFIANCE_FAIBLE",
+    "promesses_creees": 0,
+    "contestations_creees": 0,
+    "relances_suspendues": "pendant la revue"
+  }
+}

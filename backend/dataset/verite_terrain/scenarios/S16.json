@@ -1,0 +1,129 @@
+{
+  "id": "S16",
+  "titre": "Rappel P sauté",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial"
+  ],
+  "actions": [
+    "POST /api/relances/planifier"
+  ],
+  "attendu": {
+    "sautees": [
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0001",
+        "canal": "WHATSAPP",
+        "etape": "P",
+        "echeances": "ECH-0073:P",
+        "decision": "SAUTEE",
+        "motif": "P_APRES_ECHEANCE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0002",
+        "canal": "EMAIL",
+        "etape": "P",
+        "echeances": "ECH-0074:P",
+        "decision": "SAUTEE",
+        "motif": "P_APRES_ECHEANCE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0003",
+        "canal": "WHATSAPP",
+        "etape": "P",
+        "echeances": "ECH-0075:P",
+        "decision": "SAUTEE",
+        "motif": "P_APRES_ECHEANCE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0004",
+        "canal": "EMAIL",
+        "etape": "P",
+        "echeances": "ECH-0076:P",
+        "decision": "SAUTEE",
+        "motif": "P_APRES_ECHEANCE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0005",
+        "canal": "WHATSAPP",
+        "etape": "P",
+        "echeances": "ECH-0079:P",
+        "decision": "SAUTEE",
+        "motif": "P_APRES_ECHEANCE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0006",
+        "canal": "EMAIL",
+        "etape": "P",
+        "echeances": "ECH-0080:P",
+        "decision": "SAUTEE",
+        "motif": "P_APRES_ECHEANCE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0007",
+        "canal": "WHATSAPP",
+        "etape": "P",
+        "echeances": "ECH-0081:P",
+        "decision": "SAUTEE",
+        "motif": "P_APRES_ECHEANCE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0008",
+        "canal": "EMAIL",
+        "etape": "P",
+        "echeances": "ECH-0082:P",
+        "decision": "SAUTEE",
+        "motif": "P_APRES_ECHEANCE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0016",
+        "canal": "EMAIL",
+        "etape": "P",
+        "echeances": "ECH-0140:P",
+        "decision": "SAUTEE",
+        "motif": "P_APRES_ECHEANCE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0017",
+        "canal": "WHATSAPP",
+        "etape": "P",
+        "echeances": "ECH-0141:P",
+        "decision": "SAUTEE",
+        "motif": "P_APRES_ECHEANCE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0018",
+        "canal": "EMAIL",
+        "etape": "P",
+        "echeances": "ECH-0142:P",
+        "decision": "SAUTEE",
+        "motif": "P_APRES_ECHEANCE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0019",
+        "canal": "WHATSAPP",
+        "etape": "P",
+        "echeances": "ECH-0143:P",
+        "decision": "SAUTEE",
+        "motif": "P_APRES_ECHEANCE"
+      }
+    ],
+    "exemples": {
+      "P_TROP_PROCHE": "FAC-2026-0042",
+      "P_APRES_ECHEANCE": "FAC-2026-0061"
+    },
+    "nb_P_TROP_PROCHE": 1,
+    "nb_P_APRES_ECHEANCE": 15
+  }
+}

@@ -1,0 +1,31 @@
+id,raison_sociale,secteur,ville,email,whatsapp,actif
+CLI-0001,Établissements Gbènami et Fils,pièces automobiles,Cotonou,contact@client-0001.example,+2290100000001,1
+CLI-0002,Pharmacie Sèmèvo Services SARL,pharmacie,Abomey-Calavi,contact@client-0002.example,+2290100000002,1
+CLI-0003,Quincaillerie Hounkpè et Frères,quincaillerie,Cotonou,contact@client-0003.example,+2290100000003,1
+CLI-0004,Imprimerie Tchitchi Services SARL,imprimerie,Porto-Novo,contact@client-0004.example,+2290100000004,1
+CLI-0005,Traiteur Kossoungbo,traiteur,Abomey-Calavi,contact@client-0005.example,+2290100000005,1
+CLI-0006,Boutique Wémèhoun,fournitures de bureau,Cotonou,contact@client-0006.example,+2290100000006,1
+CLI-0007,Dassi BTP SARL,BTP,Parakou,contact@client-0007.example,+2290100000007,1
+CLI-0008,Informatique Zinsou-Alapini SARL,informatique,Cotonou,contact@client-0008.example,+2290100000008,1
+CLI-0009,Établissements Fagnon et Fils,transport,Bohicon,contact@client-0009.example,+2290100000009,1
+CLI-0010,Agro-Sèlè Services SARL,agroalimentaire,Ouidah,contact@client-0010.example,+2290100000010,1
+CLI-0011,Cabinet Tohoungba et Associés,cabinet d'études,Cotonou,contact@client-0011.example,+2290100000011,1
+CLI-0012,Hôtel Ahouanvoèbla,hôtellerie,Abomey-Calavi,contact@client-0012.example,+2290100000012,1
+CLI-0013,Boutique Akplogan,pièces automobiles,Cotonou,contact@client-0013.example,+2290100000013,1
+CLI-0014,Lokonon Transports SARL,transport,Lokossa,contact@client-0014.example,+2290100000014,1
+CLI-0015,Imprimerie Houéssou et Fils,imprimerie,Abomey-Calavi,contact@client-0015.example,+2290100000015,1
+CLI-0016,Grands Travaux Adédjouma SARL,BTP,Cotonou,contact@client-0016.example,+2290100000016,1
+CLI-0017,Agro-Industrie Kpossou SARL,agroalimentaire,Parakou,contact@client-0017.example,+2290100000017,1
+CLI-0018,Groupe Hôtelier Sagbo SARL,hôtellerie,Cotonou,contact@client-0018.example,+2290100000018,1
+CLI-0019,Tokpanou Informatique et Réseaux SARL,informatique,Abomey-Calavi,contact@client-0019.example,+2290100000019,1
+CLI-0020,Boutique Gnonlonfoun,fournitures de bureau,Natitingou,,+2290100000020,1
+CLI-0021,Boutique Dakpogan,quincaillerie,Djougou,,+2290100000021,1
+CLI-0022,Traiteur Houngbédji,traiteur,Cotonou,,+2290100000022,1
+CLI-0023,Boutique Yédomè,pharmacie,Porto-Novo,,+2290100000023,1
+CLI-0024,Boutique Mèdénou,pièces automobiles,Bohicon,,+2290100000024,1
+CLI-0025,Cabinet Gandonou Conseil,cabinet d'études,Cotonou,contact@client-0025.example,,1
+CLI-0026,Sossavi Édition SARL,imprimerie,Porto-Novo,contact@client-0026.example,,1
+CLI-0027,Établissements Ahlonsou et Fils,quincaillerie,Abomey-Calavi,contact@client-0027.example,+2290100000027,1
+CLI-0028,Boutique Kiki-Zinsou,traiteur,Cotonou,,,1
+CLI-0029,Nouveau Horizon Services SARL,fournitures de bureau,Cotonou,contact@client-0029.example,+2290100000029,1
+CLI-0030,Djossou Transports SARL,transport,Ouidah,contact@client-0030.example,+2290100000030,1

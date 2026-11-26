@@ -1,0 +1,21 @@
+{
+  "id": "S05",
+  "titre": "Paiement ambigu : non affecté, en revue",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial"
+  ],
+  "actions": [
+    "POST /api/paiements (paiement_ambigu.csv)"
+  ],
+  "attendu": {
+    "paiement": "PAY-0085",
+    "affectations": [],
+    "reste_non_affecte": 98000,
+    "revue": {
+      "type": "PAIEMENT_AMBIGU",
+      "objet_type": "PAIEMENT",
+      "objet_id": "PAY-0085"
+    }
+  }
+}

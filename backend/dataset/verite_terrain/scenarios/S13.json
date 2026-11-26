@@ -1,0 +1,45 @@
+{
+  "id": "S13",
+  "titre": "Échéances le même jour : un message regroupé",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial"
+  ],
+  "actions": [
+    "POST /api/relances/planifier le 2026-12-15 puis le 2026-12-16"
+  ],
+  "attendu": {
+    "le_15": [
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0024",
+        "canal": "WHATSAPP",
+        "etape": "GROUPE",
+        "echeances": "ECH-0046:P;ECH-0047:P",
+        "decision": "PREPAREE",
+        "motif": "REGROUPE"
+      }
+    ],
+    "le_16": [
+      {
+        "date": "2026-12-16",
+        "client": "CLI-0012",
+        "canal": "EMAIL",
+        "etape": "GROUPE",
+        "echeances": "ECH-0052:P;ECH-0094:R2",
+        "decision": "PREPAREE",
+        "motif": "REGROUPE"
+      },
+      {
+        "date": "2026-12-16",
+        "client": "CLI-0012",
+        "canal": "EMAIL",
+        "etape": "P",
+        "echeances": "ECH-0052:P",
+        "decision": "ABSORBEE",
+        "motif": "REGROUPE"
+      }
+    ],
+    "note": "Le 12-16, R2 de FAC-2026-0082 absorbe le rappel P de FAC-2026-0045."
+  }
+}

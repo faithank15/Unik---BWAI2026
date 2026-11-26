@@ -1,0 +1,122 @@
+{
+  "id": "S11",
+  "titre": "Promesse tenue ou non tenue",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial"
+  ],
+  "actions": [
+    "POST /api/relances/planifier",
+    "POST /api/paiements (paiement_promesse_tenue.csv)",
+    "avancer d'un jour puis planifier"
+  ],
+  "attendu": {
+    "le_15": [
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0003",
+        "canal": "WHATSAPP",
+        "etape": "",
+        "echeances": "ECH-0134",
+        "decision": "SUSPENDUE",
+        "motif": "SUSPENDU_PROMESSE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0004",
+        "canal": "EMAIL",
+        "etape": "",
+        "echeances": "ECH-0135",
+        "decision": "SUSPENDUE",
+        "motif": "SUSPENDU_PROMESSE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0005",
+        "canal": "WHATSAPP",
+        "etape": "",
+        "echeances": "ECH-0136",
+        "decision": "SUSPENDUE",
+        "motif": "SUSPENDU_PROMESSE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0006",
+        "canal": "EMAIL",
+        "etape": "",
+        "echeances": "ECH-0137",
+        "decision": "SUSPENDUE",
+        "motif": "SUSPENDU_PROMESSE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0007",
+        "canal": "WHATSAPP",
+        "etape": "GROUPE",
+        "echeances": "ECH-0081:R1;ECH-0138:R3",
+        "decision": "PREPAREE",
+        "motif": "REGROUPE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0008",
+        "canal": "EMAIL",
+        "etape": "GROUPE",
+        "echeances": "ECH-0082:R1;ECH-0139:R2",
+        "decision": "PREPAREE",
+        "motif": "REGROUPE"
+      }
+    ],
+    "le_16": [
+      {
+        "date": "2026-12-16",
+        "client": "CLI-0003",
+        "canal": "WHATSAPP",
+        "etape": "",
+        "echeances": "ECH-0134",
+        "decision": "SUSPENDUE",
+        "motif": "SUSPENDU_PROMESSE"
+      },
+      {
+        "date": "2026-12-16",
+        "client": "CLI-0004",
+        "canal": "EMAIL",
+        "etape": "",
+        "echeances": "ECH-0135",
+        "decision": "SUSPENDUE",
+        "motif": "SUSPENDU_PROMESSE"
+      },
+      {
+        "date": "2026-12-16",
+        "client": "CLI-0005",
+        "canal": "WHATSAPP",
+        "etape": "",
+        "echeances": "ECH-0136",
+        "decision": "SUSPENDUE",
+        "motif": "SUSPENDU_PROMESSE"
+      }
+    ],
+    "cas_limite_0110": {
+      "date_promise": "2026-12-13",
+      "suspendue_le_15": true,
+      "suspendue_le_16": false,
+      "premiere_decision_apres_suspension": [
+        {
+          "date": "2026-12-21",
+          "client": "CLI-0006",
+          "canal": "EMAIL",
+          "etape": "GROUPE",
+          "echeances": "ECH-0080:R2;ECH-0137:R2",
+          "decision": "EN_ATTENTE_VALIDATION",
+          "motif": "GROS_MONTANT"
+        }
+      ],
+      "note": "La suspension court jusqu'au 12-15 inclus ; la reprise du 12-16 peut être différée par l'espacement (envoi du 12-15 au même client)."
+    },
+    "promesse_tenue_apres_paiement": {
+      "promesse": "PRO-0001",
+      "statut": "TENUE",
+      "relances": []
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "id": "S15",
+  "titre": "Report d'envoi un dimanche ou un jour férié",
+  "date_reference": "2026-12-20",
+  "prerequis": [
+    "état initial"
+  ],
+  "actions": [
+    "avancer au 2026-12-20, planifier ; au 2026-12-21 ; au 2026-12-25 ; au 2026-12-26"
+  ],
+  "attendu": {
+    "jours_sans_decision": [
+      "2026-12-20",
+      "2026-12-25"
+    ],
+    "decisions_sur_jours_non_ouvres": [],
+    "reportees": [
+      {
+        "date": "2026-12-21",
+        "client": "CLI-0012",
+        "canal": "EMAIL",
+        "etape": "R1",
+        "echeances": "ECH-0052:R1",
+        "decision": "PREPAREE",
+        "motif": "JOUR_NON_OUVRE_REPORTE"
+      },
+      {
+        "date": "2026-12-21",
+        "client": "CLI-0025",
+        "canal": "EMAIL",
+        "etape": "GROUPE",
+        "echeances": "ECH-0051:R1;ECH-0084:R2",
+        "decision": "PREPAREE",
+        "motif": "JOUR_NON_OUVRE_REPORTE"
+      },
+      {
+        "date": "2026-12-26",
+        "client": "CLI-0002",
+        "canal": "EMAIL",
+        "etape": "R1",
+        "echeances": "ECH-0055:R1",
+        "decision": "PREPAREE",
+        "motif": "JOUR_NON_OUVRE_REPORTE"
+      },
+      {
+        "date": "2026-12-26",
+        "client": "CLI-0024",
+        "canal": "WHATSAPP",
+        "etape": "GROUPE",
+        "echeances": "ECH-0046:R2;ECH-0047:R2",
+        "decision": "PREPAREE",
+        "motif": "JOUR_NON_OUVRE_REPORTE"
+      },
+      {
+        "date": "2026-12-26",
+        "client": "CLI-0029",
+        "canal": "WHATSAPP",
+        "etape": "GROUPE",
+        "echeances": "ECH-0056:P;ECH-0100:R3;ECH-0119:R3",
+        "decision": "PREPAREE",
+        "motif": "JOUR_NON_OUVRE_REPORTE"
+      }
+    ]
+  }
+}

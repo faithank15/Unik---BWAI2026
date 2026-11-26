@@ -1,0 +1,2 @@
+id,client_id,date_paiement,montant,mode,reference_externe,source,statut,references_indiquees
+PAY-0085,CLI-0009,2026-12-15,194500,VIREMENT,VIR-SIM-2026-900001,SIMULE,RECU,FA-2026-0473;FA-2026-0474

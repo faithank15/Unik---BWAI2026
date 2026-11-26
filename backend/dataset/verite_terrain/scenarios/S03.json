@@ -1,0 +1,68 @@
+{
+  "id": "S03",
+  "titre": "Soldes, statuts et paiement partiel",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial au 2026-12-15"
+  ],
+  "actions": [
+    "GET /api/factures/FAC-2026-0087",
+    "GET /api/factures/FAC-2026-0088",
+    "GET /api/factures/FAC-2026-0089",
+    "GET /api/factures/FAC-2026-0090",
+    "GET /api/factures/FAC-2026-0091",
+    "GET /api/factures/FAC-2026-0092",
+    "GET /api/factures/FAC-2026-0093",
+    "GET /api/factures/FAC-2026-0094"
+  ],
+  "attendu": [
+    {
+      "facture_id": "FAC-2026-0087",
+      "statut": "ECHUE",
+      "solde_facture": 105500,
+      "partiellement_payee": 1
+    },
+    {
+      "facture_id": "FAC-2026-0088",
+      "statut": "ECHUE",
+      "solde_facture": 29500,
+      "partiellement_payee": 1
+    },
+    {
+      "facture_id": "FAC-2026-0089",
+      "statut": "ECHUE",
+      "solde_facture": 175500,
+      "partiellement_payee": 1
+    },
+    {
+      "facture_id": "FAC-2026-0090",
+      "statut": "ECHUE",
+      "solde_facture": 12500,
+      "partiellement_payee": 1
+    },
+    {
+      "facture_id": "FAC-2026-0091",
+      "statut": "ECHUE",
+      "solde_facture": 76000,
+      "partiellement_payee": 1
+    },
+    {
+      "facture_id": "FAC-2026-0092",
+      "statut": "NON_ECHUE",
+      "solde_facture": 24500,
+      "partiellement_payee": 1
+    },
+    {
+      "facture_id": "FAC-2026-0093",
+      "statut": "NON_ECHUE",
+      "solde_facture": 39000,
+      "partiellement_payee": 1
+    },
+    {
+      "facture_id": "FAC-2026-0094",
+      "statut": "NON_ECHUE",
+      "solde_facture": 175500,
+      "partiellement_payee": 1
+    }
+  ]
+}

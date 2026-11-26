@@ -1,0 +1,78 @@
+{
+  "id": "S10",
+  "titre": "Contestation : suspension puis reprise",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial"
+  ],
+  "actions": [
+    "POST /api/relances/planifier",
+    "POST /api/contestations/CTE-0002/cloturer (VALIDATEUR, REJETEE)",
+    "POST /api/relances/planifier le même jour"
+  ],
+  "attendu": {
+    "suspendues": [
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0010",
+        "canal": "EMAIL",
+        "etape": "",
+        "echeances": "ECH-0109",
+        "decision": "SUSPENDUE",
+        "motif": "SUSPENDU_CONTESTATION"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0012",
+        "canal": "EMAIL",
+        "etape": "",
+        "echeances": "ECH-0110",
+        "decision": "SUSPENDUE",
+        "motif": "SUSPENDU_CONTESTATION"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0013",
+        "canal": "WHATSAPP",
+        "etape": "",
+        "echeances": "ECH-0107",
+        "decision": "SUSPENDUE",
+        "motif": "SUSPENDU_CONTESTATION"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0014",
+        "canal": "EMAIL",
+        "etape": "",
+        "echeances": "ECH-0108",
+        "decision": "SUSPENDUE",
+        "motif": "SUSPENDU_CONTESTATION"
+      }
+    ],
+    "contestations_ouvertes": {
+      "FAC-2026-0095": [
+        "ECH-0107"
+      ],
+      "FAC-2026-0096": [
+        "ECH-0108"
+      ],
+      "FAC-2026-0097": [
+        "ECH-0109"
+      ],
+      "FAC-2026-0098": [
+        "ECH-0110"
+      ]
+    },
+    "apres_cloture_CTE_0002": [
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0014",
+        "canal": "EMAIL",
+        "etape": "R2",
+        "echeances": "ECH-0108:R2",
+        "decision": "PREPAREE",
+        "motif": ""
+      }
+    ]
+  }
+}

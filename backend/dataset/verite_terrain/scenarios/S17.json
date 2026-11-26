@@ -1,0 +1,22 @@
+{
+  "id": "S17",
+  "titre": "Réponse « déjà payé » : revue, jamais de marquage automatique",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "faux LLM : DEJA_PAYE, confiance 0,9"
+  ],
+  "actions": [
+    "POST /api/messages (MSG-0014)",
+    "POST /api/messages/MSG-0014/classer?synchrone=true"
+  ],
+  "attendu": {
+    "message": "MSG-0014",
+    "client": "CLI-0001",
+    "facture": "FAC-2026-0061",
+    "revue": "VERIF_PAIEMENT",
+    "statut_message": "EN_REVUE",
+    "solde_inchange": 99000,
+    "paiements_crees": 0,
+    "relances_suspendues": "SUSPENDU_MESSAGE_EN_ATTENTE"
+  }
+}

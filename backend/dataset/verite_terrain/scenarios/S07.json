@@ -1,0 +1,41 @@
+{
+  "id": "S07",
+  "titre": "Relance annulée : paiement reçu entre la préparation et l'envoi",
+  "date_reference": "2026-12-15",
+  "prerequis": [
+    "état initial"
+  ],
+  "actions": [
+    "POST /api/relances/planifier",
+    "POST /api/paiements (paiement_entre_preparation_et_envoi.csv)",
+    "POST /api/relances/envoyer"
+  ],
+  "attendu": {
+    "echeance_id": "ECH-0073",
+    "facture_id": "FAC-2026-0061",
+    "etape": "R1",
+    "statut_final": "ANNULEE",
+    "motif": "SOLDE_NUL",
+    "envois_pour_ce_client": 0,
+    "relance_avant_paiement": [
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0001",
+        "canal": "WHATSAPP",
+        "etape": "P",
+        "echeances": "ECH-0073:P",
+        "decision": "SAUTEE",
+        "motif": "P_APRES_ECHEANCE"
+      },
+      {
+        "date": "2026-12-15",
+        "client": "CLI-0001",
+        "canal": "WHATSAPP",
+        "etape": "R1",
+        "echeances": "ECH-0073:R1",
+        "decision": "PREPAREE",
+        "motif": ""
+      }
+    ]
+  }
+}

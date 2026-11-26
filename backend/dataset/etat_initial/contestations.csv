@@ -1,0 +1,7 @@
+id,facture_id,echeance_id,motif,message_source_id,date_ouverture,statut,date_cloture
+CTE-0001,FAC-2026-0095,,montant non conforme,,2026-11-20,OUVERTE,
+CTE-0002,FAC-2026-0096,,marchandise non livrée,,2026-12-02,OUVERTE,
+CTE-0003,FAC-2026-0097,,doublon de facturation,,2026-12-10,OUVERTE,
+CTE-0004,FAC-2026-0098,,qualité non conforme,,2026-12-08,OUVERTE,
+CTE-0005,FAC-2026-0099,,montant non conforme,,2026-11-27,CLOTUREE,2026-12-08
+CTE-0006,FAC-2026-0100,,marchandise non livrée,,2026-12-03,CLOTUREE,2026-12-11
