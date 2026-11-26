@@ -35,11 +35,23 @@ Référence : le dépôt `Unik---BWAI2026`, dossier `backend/` (`openapi.json`, 
 | Relances suspendues et comparaison à la règle naïve | `GET /api/relances/suspensions`, `GET /api/evaluation/comparaison-reference` |
 | Paramètres métier (lecture ; modification par le validateur) | `GET /api/parametres`, `PUT /api/parametres/{cle}` |
 
-## Questions pour le back-end (rien de bloquant)
+## Questions au back-end et réponses
 
-1. **Les noms des clients dans les listes.** `factures`, `priorisation`, `relances`, `revue`, `canaux/envois` et `relances/suspensions` ne donnent que `client_id`. L'application charge les 30 clients une fois pour mettre un nom sur chaque ligne. Un champ `client_raison_sociale` dans ces listes éviterait ce chargement. Garder tel quel si vous préférez.
-2. **Les décisions d'une escalade.** `POST /api/revue/{id}/resoudre` accepte un texte libre. L'application propose `APPEL_CLIENT`, `MISE_EN_DEMEURE`, `ABANDON` et `SANS_SUITE`, plus un commentaire obligatoire. À confirmer ou à remplacer par votre liste.
-3. **Les revues « contact invalide » ou « sans accord ».** Après `PUT /api/clients/{id}/preferences`, l'application résout la revue avec la décision `CONTACT_CORRIGE`. Si le back-end la résout déjà seul à la modification du contact, on retire ce second appel.
+1. **Les noms des clients dans les listes** : fait par le back-end (`client_raison_sociale`). L'application ne charge plus les 30 clients au démarrage ; elle retient les noms donnés par les listes et ne charge la liste complète que pour l'onglet Clients ou le choix d'un client.
+2. **Les décisions d'une escalade** : toujours en texte libre côté serveur ; l'application garde `APPEL_CLIENT`, `MISE_EN_DEMEURE`, `ABANDON`, `SANS_SUITE`.
+3. **Revue « contact invalide » après correction** : l'application résout encore la revue avec `CONTACT_CORRIGE`.
+4. **Une IA qui propose, l'agent qui valide** : en partie fait. Le back-end fait rédiger l'introduction et la conclusion des **courriels** par le LLM, selon le cas du client et le ton de l'étape (les montants, dates et factures restent insérés par le code) ; WhatsApp garde les canevas. Le moment des relances reste un calendrier, mais l'espacement grandit avec le montant.
+
+## Branché après l'extension IA du back-end (26 novembre 2026)
+
+| Dans l'application | Route |
+|---|---|
+| **Relancer maintenant** (fiche client, et depuis une facture), avec canal et raison | `POST /api/relances/manuelle` |
+| Jours où ne pas relancer le client, moment préféré, date de la dernière modification | `PUT /api/clients/{id}/preferences` (`jours_a_eviter`, `plage_horaire`, `provenance`) |
+| **Courriels rédigés par l'IA** (Compte) : cas, ton, objet, introduction, conclusion, « Marquer comme relue » | `GET /api/redactions`, `POST /api/redactions/relue` |
+| Relances différées par l'espacement, avec leur prochaine date (tableau de bord) | `GET /api/tableau-de-bord` (`relances_reportees`) |
+| Origine d'une relance : calendrier ou manuelle | `GET /api/relances/{id}` (`origine`) |
+| Erreurs expliquées : jour non ouvré, jour à éviter, relance déjà en cours, rien à relancer, canal ou consentement | règles `JOUR_NON_OUVRE`, `JOUR_A_EVITER`, `RELANCE_DEJA_EN_COURS`, `RIEN_A_RELANCER`, `CANAL_INVALIDE`, `CONSENTEMENT_ABSENT` |
 
 ## Lancer avec le back-end
 
@@ -56,4 +68,4 @@ flutter run --dart-define=FAKTU_API=http://10.0.2.2:8000 # émulateur Android
 flutter run --dart-define=FAKTU_API=http://192.168.1.20:8000  # téléphone sur le même Wi-Fi que le PC
 ```
 
-Comptes : `gestionnaire` et `validateur`, avec les mots de passe définis dans `backend/.env` (`SEED_MDP_GESTIONNAIRE`, `SEED_MDP_VALIDATEUR`).
+Comptes : `gestionnaire` et `validateur`, avec les mots de passe définis dans `backend/.env` (`SEED_MDP_GESTIONNAIRE`, `SEED_MDP_VALIDATEUR`). Sans `LLM_API_KEY`, les réponses restent « à classer » et les courriels utilisent les messages types.

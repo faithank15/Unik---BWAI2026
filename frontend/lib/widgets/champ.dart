@@ -134,6 +134,7 @@ class _ChampVerreState extends State<ChampVerre> {
                         autofocus: widget.autofocus,
                         obscureText: widget.secret && _cache,
                         keyboardType: widget.clavier,
+                        inputFormatters: widget.clavier == _clavierMontant ? const [_Milliers()] : null,
                         textInputAction: widget.action,
                         onSubmitted: widget.onSubmitted,
                         onChanged: widget.onChanged,
@@ -342,11 +343,14 @@ class _ChampCodeState extends State<ChampCode> with WidgetsBindingObserver {
 
 /// Un lien de texte, en ocean.
 class Lien extends StatelessWidget {
-  const Lien(this.texte, {super.key, this.onTap, this.discret = false});
+  const Lien(this.texte, {super.key, this.onTap, this.discret = false, this.danger = false});
 
   final String texte;
   final VoidCallback? onTap;
   final bool discret;
+
+  /// Le lien retire ou annule quelque chose : en rouge.
+  final bool danger;
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -356,8 +360,30 @@ class Lien extends StatelessWidget {
       link: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        child: Text(texte, style: discret ? Textes.lien.copyWith(color: Couleurs.discret) : Textes.lien),
+        child: Text(texte, style: Textes.lien.copyWith(color: danger ? Couleurs.erreur : (discret ? Couleurs.discret : null))),
       ),
     ),
   );
+}
+
+const _clavierMontant = TextInputType.numberWithOptions(signed: false, decimal: false);
+
+/// Un montant se lit pendant qu on le tape : « 1 250 000 », chiffres seuls.
+class _Milliers extends TextInputFormatter {
+  const _Milliers();
+
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue ancien, TextEditingValue nouveau) {
+    final chiffres = nouveau.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final b = StringBuffer();
+    for (var i = 0; i < chiffres.length; i++) {
+      if (i > 0 && (chiffres.length - i) % 3 == 0) b.write(' ');
+      b.write(chiffres[i]);
+    }
+    final texte = b.toString();
+    return TextEditingValue(
+      text: texte,
+      selection: TextSelection.collapsed(offset: texte.length),
+    );
+  }
 }

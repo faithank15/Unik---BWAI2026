@@ -19,6 +19,7 @@ import '../widgets/icone.dart';
 import '../widgets/page.dart';
 import '../widgets/verre.dart';
 import 'ajouter.dart';
+import 'relance_manuelle.dart';
 
 class EcranFicheClient extends StatefulWidget {
   const EcranFicheClient({super.key, required this.id});
@@ -108,6 +109,10 @@ class _EcranFicheClientState extends State<EcranFicheClient> {
         ),
       ),
       const SizedBox(height: 12),
+      if (c.encours > 0) ...[
+        BoutonVerre(texte: t('Relancer maintenant'), icone: 'envoyer', plein: true, onTap: () => relancerMaintenant(context, c)),
+        const SizedBox(height: 10),
+      ],
       Row(
         children: [
           Expanded(
@@ -128,7 +133,7 @@ class _EcranFicheClientState extends State<EcranFicheClient> {
         ],
       ),
       const SizedBox(height: 22),
-      TitreSection(t('Contact'), lien: t('Modifier'), onLien: () => modifierContact(context, c)),
+      TitreSection(t('Contact'), lien: t('Modifier le contact'), onLien: () => modifierContact(context, c)),
       Plaque(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: Column(
@@ -136,15 +141,22 @@ class _EcranFicheClientState extends State<EcranFicheClient> {
             if (c.interlocuteur != null) LigneInfo(t('Interlocuteur'), c.interlocuteur!),
             LigneInfo(t('Canal préféré'), canal(c.canalPrefere)),
             if (c.whatsapp != null) LigneInfo('WhatsApp', c.whatsapp!),
-            if (c.email != null) LigneInfo(t('Courriel'), c.email!),
+            if (c.email != null) LigneInfo(t('E-mail'), c.email!),
+            if (c.joursAEviter.isNotEmpty) LigneInfo(t('Jamais relancé le'), c.joursAEviter.map(jourSemaine).join(', ')),
+            if (c.plageHoraire != 'AUCUNE') LigneInfo(t('Moment préféré'), plageHoraire(c.plageHoraire)),
             LigneInfo(t('Relances'), c.consentement ? t('Autorisées') : t('Refusées par le client'), couleur: c.consentement ? null : Couleurs.erreur),
+            if (_modifieLe(c) != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 4),
+                child: Text(t('Préférences modifiées dans Faktu le {d}', {'d': dateLongue(_modifieLe(c)!)}), style: Textes.petit),
+              ),
           ],
         ),
       ),
       const SizedBox(height: 22),
       TitreSection(accorder(ouvertes.length, 'Facture ouverte', 'Factures ouvertes')),
       if (ouvertes.isEmpty)
-        EtatVide(icone: 'coche', titre: t('Tout est réglé'))
+        EtatVide(icone: 'coche', titre: t('Aucune facture à payer'))
       else
         GroupeLignes(retrait: 16, lignes: [for (final f in ouvertes) LigneFacture(f, onTap: () => ouvrir(context, 'facture/${f.id}'))]),
       if (fermees.isNotEmpty) ...[
@@ -186,13 +198,15 @@ Future<bool> modifierContact(BuildContext context, Client c) async {
   final whatsapp = TextEditingController(text: c.whatsapp ?? '');
   final email = TextEditingController(text: c.email ?? '');
   final interlocuteur = TextEditingController(text: c.interlocuteur ?? '');
+  final jours = {...c.joursAEviter};
+  var plage = c.plageHoraire;
   String? erreur;
   var enCours = false;
   final ok = await montrerFeuille<bool>(
     context,
     titre: t('Contact de {c}', {'c': c.nom}),
     contenu: (f) => StatefulBuilder(
-      builder: (f, maj) => Padding(
+      builder: (f, maj) => CorpsFeuille(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -230,9 +244,29 @@ Future<bool> modifierContact(BuildContext context, Client c) async {
             const SizedBox(height: 10),
             ChampVerre(libelle: 'WhatsApp', icone: 'whatsapp', controleur: whatsapp, clavier: TextInputType.phone, indice: '+2290100000000'),
             const SizedBox(height: 12),
-            ChampVerre(libelle: t('Courriel'), icone: 'enveloppe', controleur: email, clavier: TextInputType.emailAddress),
+            ChampVerre(libelle: t('E-mail'), icone: 'enveloppe', controleur: email, clavier: TextInputType.emailAddress),
             const SizedBox(height: 12),
-            ChampVerre(libelle: t('Interlocuteur'), icone: 'profil', controleur: interlocuteur, facultatif: true),
+            ChampVerre(libelle: t('Interlocuteur'), icone: 'profil', controleur: interlocuteur, facultatif: true, indice: t('Mme Adjoa Houngbo')),
+            const SizedBox(height: 14),
+            Libelle(t('Jours où ne pas le relancer'), facultatif: true),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final j in joursSemaine)
+                  Pastille(
+                    texte: jourSemaine(j),
+                    icone: jours.contains(j) ? 'fermer' : null,
+                    retenue: jours.contains(j),
+                    onTap: () => maj(() => jours.contains(j) ? jours.remove(j) : jours.add(j)),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Libelle(t('Moment préféré pour le contacter')),
+            ChoixPastilles(valeurs: plagesHoraires, choisie: plage, nom: plageHoraire, onChoisi: (v) => maj(() => plage = v)),
+            const SizedBox(height: 6),
+            Text(t('Un jour à éviter est traité comme un dimanche pour ce client : la relance attend le jour suivant permis.'), style: Textes.petit),
             ErreurFormulaire(erreur),
             const SizedBox(height: 16),
             BoutonVerre(
@@ -252,6 +286,11 @@ Future<bool> modifierContact(BuildContext context, Client c) async {
                     'whatsapp': whatsapp.text.trim().isEmpty ? null : whatsapp.text.trim().replaceAll(' ', ''),
                     'email': email.text.trim().isEmpty ? null : email.text.trim(),
                     'interlocuteur': interlocuteur.text.trim().isEmpty ? null : interlocuteur.text.trim(),
+                    'jours_a_eviter': [
+                      for (final j in joursSemaine)
+                        if (jours.contains(j)) j,
+                    ],
+                    'plage_horaire': plage,
                   });
                   if (f.mounted) Navigator.pop(f, true);
                 } on ApiErreur catch (e) {
@@ -427,9 +466,7 @@ class CarteMessage extends StatelessWidget {
               if (valide != null)
                 PastilleStatut(Apparence(categorie(valide), 'verifie', Couleurs.succes))
               else if (m.categorieIa != null)
-                PastilleStatut(Apparence('${t('IA')} : ${categorie(m.categorieIa!)}', 'etincelle', Couleurs.ocean))
-              else
-                PastilleStatut(Apparence(t('À classer'), 'commentaire', Couleurs.discret)),
+                PastilleStatut(Apparence('${t('IA')} : ${categorie(m.categorieIa!)}', 'etincelle', Couleurs.ocean)),
               if (valide == null && m.confiance != null) PastilleStatut(Apparence(confiance(m.confiance), 'aide', Couleurs.discret)),
               if (m.datePromise != null)
                 PastilleStatut(Apparence(t('Promis le {d}', {'d': dateCourte(m.datePromise!)}), 'calendrier', Couleurs.texte, fond: Couleurs.secondaire)),
@@ -442,4 +479,15 @@ class CarteMessage extends StatelessWidget {
       ),
     );
   }
+}
+
+/// La derniere date a laquelle une preference a ete changee dans Faktu (et non par l import).
+DateTime? _modifieLe(Client c) {
+  DateTime? derniere;
+  for (final v in c.provenance.values) {
+    final p = json(v);
+    final d = date(p['date']);
+    if (p['source'] == 'GESTIONNAIRE' && d != null && (derniere == null || d.isAfter(derniere))) derniere = d;
+  }
+  return derniere;
 }

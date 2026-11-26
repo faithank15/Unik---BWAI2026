@@ -31,7 +31,7 @@ class EcranAccueil extends StatelessWidget {
       final tb = d.tableau;
       return PageFaktu(
         titre: t('Tableau de bord'),
-        sousTitre: t('Au {d}', {'d': dateDuJour(d.dateReference)}),
+        sousTitre: dateDuJour(d.dateReference),
         enfants: [
           if (tb == null && d.erreur != null)
             EtatErreur(message: d.erreur!, onReessayer: () => d.rafraichir(force: true))
@@ -147,7 +147,8 @@ class EcranAccueil extends StatelessWidget {
                         fond: apparenceRelance(code).fond,
                       ),
                     ),
-                if (rel.values.every((v) => v == 0)) Text(t('Rien de préparé pour aujourd’hui.'), style: Textes.petit),
+                if (rel.values.every((v) => v == 0))
+                  Text(t('Aucune relance préparée aujourd’hui. Appuyez sur Préparer pour calculer celles du jour.'), style: Textes.petit),
               ],
             ),
             if (d.contexte?.jourOuvre == false) ...[
@@ -173,23 +174,37 @@ class EcranAccueil extends StatelessWidget {
                 style: Textes.petit,
               ),
             ],
+            if (tb.reportees.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Text(accorder(tb.reportees.length, '{n} relance différée', '{n} relances différées'), style: Textes.libelle),
+              Text(
+                t('Le dernier message à ce client est trop récent. Plus le montant est élevé, plus Faktu laisse de jours entre deux relances.'),
+                style: Textes.petit,
+              ),
+              const SizedBox(height: 6),
+              for (final x in tb.reportees)
+                LigneInfo(
+                  d.nomClient('${x['client_id']}'),
+                  date(x['prochaine_date_possible']) == null ? fcfa(entier(x['total'])) : t('le {d}', {'d': dateCourte(date(x['prochaine_date_possible'])!)}),
+                ),
+            ],
           ],
         ),
       ),
       const SizedBox(height: 22),
-      TitreSection(t('Voir')),
+      TitreSection(t('Suivi')),
       GroupeLignes(
         retrait: 54,
         lignes: [
           _Lien(icone: 'calendrier', texte: t('Toutes les relances'), onTap: () => ouvrir(context, 'relances')),
-          _Lien(icone: 'enveloppe', texte: t('Messages envoyés'), detail: t('La boîte d’envoi simulée'), onTap: () => ouvrir(context, 'envois')),
+          _Lien(icone: 'enveloppe', texte: t('Messages envoyés'), detail: t('Le texte exact reçu par chaque client'), onTap: () => ouvrir(context, 'envois')),
           _Lien(
             icone: 'bouclier',
             texte: t('Relances suspendues'),
             detail: accorder(tb.suspensions.values.fold(0, (a, b) => a + b), '{n} échéance', '{n} échéances'),
             onTap: () => ouvrir(context, 'suspensions'),
           ),
-          _Lien(icone: 'journal', texte: t('Journal'), detail: t('Chaque décision et sa raison'), onTap: () => ouvrir(context, 'journal')),
+          _Lien(icone: 'journal', texte: t('Journal'), detail: t('Chaque action, qui l’a faite et pourquoi'), onTap: () => ouvrir(context, 'journal')),
         ],
       ),
       const SizedBox(height: 22),
@@ -362,7 +377,7 @@ class _DateReference extends StatelessWidget {
                 context,
                 titre: t('Passer au jour suivant ?'),
                 texte: t('Faktu passera au {d}, puis préparera et enverra les relances de ce jour.', {'d': dateLongue(date.add(const Duration(days: 1)))}),
-                action: t('Passer'),
+                action: t('Passer au jour suivant'),
                 icone: 'calendrier',
                 danger: false,
               );

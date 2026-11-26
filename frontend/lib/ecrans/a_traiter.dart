@@ -49,7 +49,8 @@ class _EcranATraiterState extends State<EcranATraiter> {
       final d = Donnees.instance;
       final cherche = _sansAccents(_recherche.text.trim());
       final factures = d.priorisation.where((p) => _correspond(cherche, [d.nomClient(p.clientId), p.numero, p.factureId])).toList();
-      final clients = d.clients.values.where((c) => _correspond(cherche, [c.nom, c.id, c.ville])).toList()..sort((a, b) => b.encours.compareTo(a.encours));
+      if (_clients && !d.clientsAJour) d.tousLesClients().ignore();
+      final clients = d.clientsCharges.where((c) => _correspond(cherche, [c.nom, c.id, c.ville])).toList()..sort((a, b) => b.encours.compareTo(a.encours));
       final total = factures.fold(0, (s, p) => s + p.solde);
       return PageFaktu(
         titre: t('À traiter'),
@@ -78,7 +79,7 @@ class _EcranATraiterState extends State<EcranATraiter> {
           else if (d.tableau == null)
             const Attente()
           else if (_clients)
-            ..._listeClients(context, clients)
+            ...(d.clientsAJour ? _listeClients(context, clients) : const [Attente()])
           else
             ..._listeFactures(context, factures, cherche.isNotEmpty),
         ],

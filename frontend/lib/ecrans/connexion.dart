@@ -57,7 +57,7 @@ class _EcranConnexionState extends State<EcranConnexion> {
       const SizedBox(height: 22),
       Titre(t('Connectez-vous à Faktu'), style: Textes.titre, centre: true),
       const SizedBox(height: 8),
-      TextePage([(t('Suivez vos factures impayées et vos relances, au même endroit.'), false)], centre: true),
+      TextePage([(t('Suivez les impayés de vos clients et relancez chacun au bon moment.'), false)], centre: true),
       const SizedBox(height: 30),
       ChampVerre(
         libelle: t('Nom d’utilisateur'),

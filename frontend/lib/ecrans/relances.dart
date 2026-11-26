@@ -89,7 +89,7 @@ class _EcranRelancesState extends _EtatListe<EcranRelances, Relance> {
         final l = tout.where((r) => statuts.contains(r.statut)).toList();
         return [
           if (l.isEmpty)
-            EtatVide(icone: 'envoyer', titre: t('Aucune relance ici'))
+            EtatVide(icone: 'envoyer', titre: t('Aucune relance dans cette liste'))
           else
             GroupeLignes(retrait: 16, lignes: [for (final r in l.take(150)) LigneRelance(r, onTap: () => ouvrir(context, 'relance/${r.id}'))]),
           const SizedBox(height: 18),
@@ -145,15 +145,15 @@ class _EcranRelanceState extends State<EcranRelance> {
         !await confirmer(
           context,
           titre: t('Ne pas envoyer cette relance ?'),
-          texte: t('Elle sera rejetée et inscrite au journal.'),
-          action: t('Rejeter'),
+          texte: t('Le client ne la recevra pas. Ce choix est inscrit au journal.'),
+          action: t('Ne pas envoyer'),
           icone: 'fermer',
         )) {
       return;
     }
     try {
       envoyer ? await Donnees.instance.validerRelance(widget.id) : await Donnees.instance.rejeterRelance(widget.id);
-      if (mounted) bulle(context, envoyer ? t('Relance validée, revérifiée puis envoyée.') : t('Relance rejetée.'), icone: 'coche');
+      if (mounted) bulle(context, envoyer ? t('Relance validée et envoyée au client.') : t('Relance annulée : elle ne sera pas envoyée.'), icone: 'coche');
       await _charger();
     } on ApiErreur catch (e) {
       if (mounted) bulle(context, e.message, icone: 'alerte');
@@ -183,6 +183,7 @@ class _EcranRelanceState extends State<EcranRelance> {
                 Row(children: [PastilleStatut(apparenceRelance(r.statut)), const Spacer(), if (r.statut == 'ENVOYEE_SIM') const MentionSimulation()]),
                 const SizedBox(height: 10),
                 LigneInfo(t('Canal'), canal(r.canal)),
+                LigneInfo(t('Origine'), r.manuelle ? t('Relance manuelle, hors calendrier') : t('Calendrier des relances')),
                 if (r.datePrevue != null) LigneInfo(t('Prévue le'), dateLongue(r.datePrevue!)),
                 if (r.dateEnvoi != null) LigneInfo(t('Envoyée le'), dateLongue(r.dateEnvoi!)),
                 if (r.motif != null) LigneInfo(t('Motif'), motif(r.motif)),
@@ -217,19 +218,16 @@ class _EcranRelanceState extends State<EcranRelance> {
               ],
             ),
           ],
-          if (r.apercu != null) ...[const SizedBox(height: 22), TitreSection(t('Le message')), _Bulle(r.apercu!)],
+          if (r.apercu != null) ...[const SizedBox(height: 22), TitreSection(t('Texte envoyé au client')), _Bulle(r.apercu!)],
           if (r.statut == 'EN_ATTENTE_VALIDATION') ...[
             const SizedBox(height: 18),
             if (Donnees.instance.validateur)
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: BoutonVerre(texte: t('Ne pas envoyer'), onTap: () => _decider(false)),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: BoutonVerre(texte: t('Envoyer'), plein: true, onTap: () => _decider(true)),
-                  ),
+                  BoutonVerre(texte: t('Valider et envoyer'), plein: true, onTap: () => _decider(true)),
+                  const SizedBox(height: 8),
+                  BoutonVerre(texte: t('Ne pas envoyer'), teinte: TeinteVerre.rouge, onTap: () => _decider(false)),
                 ],
               )
             else
@@ -290,13 +288,13 @@ class _EcranEnvoisState extends _EtatListe<EcranEnvois, Envoi> {
   @override
   Widget build(BuildContext context) => PageFaktu(
     titre: t('Messages envoyés'),
-    sousTitre: t('Simulation : rien n’est vraiment parti'),
+    sousTitre: t('Envois simulés : aucun message n’a réellement été envoyé'),
     retour: true,
     rafraichir: false,
     enfants: etat(
       (l) => [
         if (l.isEmpty)
-          EtatVide(icone: 'enveloppe', titre: t('Aucun message envoyé'))
+          EtatVide(icone: 'enveloppe', titre: t('Aucun message envoyé pour le moment'))
         else
           for (final e in l.take(80)) ...[
             Plaque(
@@ -356,9 +354,9 @@ class _EcranSuspensionsState extends _EtatListe<EcranSuspensions, Json> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(t('Face à la règle « relancer tout ce qui est échu »'), style: Textes.libelle),
+              Text(t('Comparé à une relance de toutes les factures échues'), style: Textes.libelle),
               const SizedBox(height: 6),
-              LigneInfo(t('Relances de la règle naïve'), nombre(entier(ref['nb_relances_naives']))),
+              LigneInfo(t('Relances avec la règle simple'), nombre(entier(ref['nb_relances_naives']))),
               LigneInfo(t('Dont injustifiées'), nombre(entier(ref['nb_relances_injustifiees'])), couleur: Couleurs.erreur),
               LigneInfo(t('Évitées par Faktu'), nombre(entier(gain['relances_injustifiees_evitees'])), couleur: Couleurs.succes, fort: true),
               if (entier(gain['messages_economises_par_le_regroupement']) > 0)

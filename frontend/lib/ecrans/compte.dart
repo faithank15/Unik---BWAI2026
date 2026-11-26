@@ -66,7 +66,7 @@ class _EcranCompteState extends State<EcranCompte> {
     if (!oui) return;
     try {
       await Donnees.instance.reinitialiser();
-      if (mounted) bulle(context, t('Les données sont revenues à leur état de départ.'), icone: 'retourner');
+      if (mounted) bulle(context, t('Données réinitialisées au 15 décembre 2026.'), icone: 'retourner');
     } on ApiErreur catch (e) {
       if (mounted) bulle(context, e.message, icone: 'alerte');
     }
@@ -128,7 +128,7 @@ class _EcranCompteState extends State<EcranCompte> {
               u.validateur
                   ? t('En tant que validateur, vous approuvez les gros montants, les contestations et les échéanciers, et vous réglez les paramètres.')
                   : t(
-                      'En tant que gestionnaire, vous suivez les factures, enregistrez paiements et réponses, et traitez la file de revue. Les gros montants et les contestations vont au validateur.',
+                      'En tant que gestionnaire, vous suivez les factures, enregistrez les paiements et les réponses des clients, et traitez les dossiers à revoir. Les relances de gros montant, les contestations et les échéanciers sont décidés par un validateur.',
                     ),
               style: Textes.petit,
             ),
@@ -155,16 +155,17 @@ class _EcranCompteState extends State<EcranCompte> {
             LigneReglage(
               icone: 'reglages',
               texte: t('Paramètres métier'),
-              valeur: u?.validateur == true ? t('Modifiables') : t('Lecture'),
+              valeur: u?.validateur == true ? t('Vous pouvez les modifier') : t('Lecture seule'),
               onTap: () => ouvrir(context, 'parametres'),
             ),
+            LigneReglage(icone: 'etincelle', texte: t('Courriels rédigés par l’IA'), onTap: () => ouvrir(context, 'redactions')),
             LigneReglage(icone: 'journal', texte: t('Journal'), onTap: () => ouvrir(context, 'journal')),
             if (u?.validateur == true && (d.contexte?.demonstration ?? false))
               LigneReglage(icone: 'retourner', texte: t('Réinitialiser les données'), valeur: t('Démonstration'), onTap: _reinitialiser),
           ],
         ),
         GroupeReglages(
-          titre: t('Limites connues'),
+          titre: t('Bon à savoir'),
           lignes: [
             for (final (icone, texte) in [
               ('bouclier', t('Tout est simulé : aucun message ni paiement réel.')),
@@ -178,8 +179,6 @@ class _EcranCompteState extends State<EcranCompte> {
         GroupeReglages(
           lignes: [LigneReglage(icone: 'sortie', texte: t('Se déconnecter'), danger: true, onTap: _deconnecter)],
         ),
-        const SizedBox(height: 8),
-        Center(child: Text(t('Faktu · serveur {a}', {'a': adresseApi}), style: Textes.petit)),
       ],
     );
   }
@@ -227,7 +226,7 @@ class _EcranParametresState extends State<EcranParametres> {
       context,
       titre: '${p['description'] ?? p['cle']}',
       contenu: (f) => StatefulBuilder(
-        builder: (f, maj) => Padding(
+        builder: (f, maj) => CorpsFeuille(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,

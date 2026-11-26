@@ -18,6 +18,7 @@ import '../widgets/feuille.dart';
 import '../widgets/icone.dart';
 import '../widgets/verre.dart';
 import 'actions_facture.dart';
+import 'relance_manuelle.dart';
 import 'ajouter.dart';
 import 'fiche_client.dart';
 
@@ -109,7 +110,7 @@ class _EcranFactureState extends State<EcranFacture> {
             LigneInfo(t('Montant TTC'), fcfa(f.montantTtc)),
             LigneInfo(t('Déjà payé'), fcfa(f.affecte)),
             if (f.dateEmission != null) LigneInfo(t('Émise le'), dateLongue(f.dateEmission!)),
-            if (f.conditions != null) LigneInfo(t('Conditions'), lisible(f.conditions!)),
+            if (f.conditions != null) LigneInfo(t('Délai de paiement'), lisible(f.conditions!)),
             if (f.tauxPenalite != null)
               LigneInfo(t('Pénalité prévue'), t('{n} %, jamais ajoutée au solde', {'n': f.tauxPenalite!.toString().replaceAll('.', ',')})),
             if (f.suspension != null) LigneInfo(t('Relances'), motif(f.suspension), couleur: Couleurs.ocean),
@@ -131,8 +132,9 @@ class _EcranFactureState extends State<EcranFacture> {
                 children: [
                   Text(t('Pourquoi ce statut'), style: Textes.libelle),
                   const SizedBox(height: 2),
-                  Text('${regle['motif'] ?? ''}', style: Textes.corps.copyWith(fontSize: 14.5)),
-                  for (final m in jsons(regle['motifs_exclusion'])) Text('${apparenceFacture('${m['regle']}').texte} : ${m['motif']}', style: Textes.petit),
+                  Text(montantsLisibles('${regle['motif'] ?? ''}'), style: Textes.corps.copyWith(fontSize: 14.5)),
+                  for (final m in jsons(regle['motifs_exclusion']))
+                    Text(montantsLisibles('${apparenceFacture('${m['regle']}').texte} : ${m['motif']}'), style: Textes.petit),
                 ],
               ),
             ),
@@ -174,7 +176,7 @@ class _EcranFactureState extends State<EcranFacture> {
                 texte: af['avoir_id'] != null ? t('Avoir {id}', {'id': af['avoir_id']}) : t('Paiement {id}', {'id': af['paiement_id']}),
                 detail: [
                   if (af['date_affectation'] != null) dateCourte(date(af['date_affectation'])!),
-                  if (af['mode'] == 'AUTO_ANCIENNETE') t('affecté par ancienneté'),
+                  if (af['mode'] == 'AUTO_ANCIENNETE') t('affecté aux échéances les plus anciennes'),
                 ].join(' · '),
                 montant: entier(af['montant_affecte']),
               ),
@@ -199,13 +201,14 @@ class _EcranFactureState extends State<EcranFacture> {
                 texte: t('Promesse pour le {d}', {'d': dateCourte(date(p['date_promise']) ?? DateTime(2026))}),
                 detail: [statutPromesse('${p['statut']}'), if (p['montant_promis'] != null) fcfa(entier(p['montant_promis']))].join(' · '),
                 action: p['statut'] == 'EN_COURS' ? (t('Annuler'), () => _faire(() => annulerPromesse(context, '${p['id']}'))) : null,
+                danger: true,
               ),
             for (final ac in accords)
               _LigneSimple(
                 icone: 'collection',
                 texte: t('Échéancier en {n} tranches', {'n': ac['nb_tranches']}),
                 detail: statutAccord('${ac['statut']}'),
-                action: ac['statut'] == 'PROPOSE' && validateur ? (t('Décider'), () => _faire(() => deciderAccord(context, '${ac['id']}'))) : null,
+                action: ac['statut'] == 'PROPOSE' && validateur ? (t('Accepter ou refuser'), () => _faire(() => deciderAccord(context, '${ac['id']}'))) : null,
               ),
           ],
         ),
@@ -233,6 +236,14 @@ class _EcranFactureState extends State<EcranFacture> {
               icone: 'piece',
               texte: t('Enregistrer un paiement'),
               onTap: () => _faire(() => formulairePaiement(context, clientId: f.clientId, facture: f)),
+            ),
+            LigneFeuille(
+              icone: 'envoyer',
+              texte: t('Relancer ce client maintenant'),
+              onTap: () async {
+                final c = await Donnees.instance.client(f.clientId);
+                if (context.mounted) await relancerMaintenant(context, c, facture: f);
+              },
             ),
             LigneFeuille(icone: 'document', texte: t('Enregistrer un avoir'), onTap: () => _faire(() => formulaireAvoir(context, f))),
             if (ouverte == null)
@@ -286,13 +297,16 @@ class _CarteEcheance extends StatelessWidget {
 }
 
 class _LigneSimple extends StatelessWidget {
-  const _LigneSimple({required this.icone, required this.texte, this.detail, this.montant, this.action});
+  const _LigneSimple({required this.icone, required this.texte, this.detail, this.montant, this.action, this.danger = false});
 
   final String icone;
   final String texte;
   final String? detail;
   final int? montant;
   final (String, VoidCallback)? action;
+
+  /// L action retire quelque chose (annuler une promesse) : en rouge.
+  final bool danger;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -321,7 +335,7 @@ class _LigneSimple extends StatelessWidget {
             behavior: HitTestBehavior.opaque,
             child: Padding(
               padding: const EdgeInsets.all(6),
-              child: Text(action!.$1, style: Textes.lien),
+              child: Text(action!.$1, style: danger ? Textes.lien.copyWith(color: Couleurs.erreur) : Textes.lien),
             ),
           ),
       ],

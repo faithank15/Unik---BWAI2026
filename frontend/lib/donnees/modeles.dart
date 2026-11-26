@@ -71,6 +71,15 @@ class Client {
   List<String> get canauxAutorises => [for (final c in (preferences['canaux_autorises'] as List? ?? const [])) '$c'];
   bool get consentement => (preferences['consentement_relance'] ?? j['consentement_relance']) != false;
   String? get interlocuteur => preferences['interlocuteur'] as String?;
+
+  /// LUNDI a SAMEDI : ces jours-la, le client n est pas relance (comme un jour non ouvre).
+  List<String> get joursAEviter => [for (final x in (preferences['jours_a_eviter'] as List? ?? const [])) '$x'];
+
+  /// MATIN, APRES_MIDI ou AUCUNE : notee avec l envoi simule.
+  String get plageHoraire => '${preferences['plage_horaire'] ?? 'AUCUNE'}';
+
+  /// Qui a fixe une preference, et a quelle date : {champ: {source: IMPORT|GESTIONNAIRE, date}}.
+  Json get provenance => json(preferences['provenance']);
   List<Facture> get factures => [for (final f in jsons(j['factures'])) Facture(f)];
   List<Relance> get relancesRecentes => [for (final r in jsons(j['relances_recentes'])) Relance(r)];
 }
@@ -131,7 +140,7 @@ class Relance {
   String get id => '${j['id']}';
   String get clientId => '${j['client_id'] ?? ''}';
   String get canal => '${j['canal'] ?? ''}';
-  String get etape => '${j['etape'] ?? ''}';
+  String get etape => '${j['etape'] ?? j['etape_echeance'] ?? ''}';
   DateTime? get datePrevue => date(j['date_prevue']);
   DateTime? get dateEnvoi => date(j['date_envoi']);
   String get statut => '${j['statut']}';
@@ -142,6 +151,10 @@ class Relance {
   String? get apercu => (j['contenu_apercu'] ?? j['contenu']) as String?;
   List<Json> get historique => jsons(j['historique']);
   String? get revueId => j['revue_id'] as String?;
+
+  /// CALENDRIER (preparee par Faktu) ou MANUELLE (demandee par une personne, hors calendrier).
+  String get origine => '${j['origine'] ?? 'CALENDRIER'}';
+  bool get manuelle => origine == 'MANUELLE';
 }
 
 /// Un message de la boite d envoi simulee (GET /api/canaux/envois).
@@ -165,7 +178,7 @@ class Message {
   String get clientId => '${j['client_id'] ?? ''}';
   String get canal => '${j['canal'] ?? ''}';
   DateTime? get dateReception => date(j['date_reception']);
-  String get contenu => '${j['contenu'] ?? ''}';
+  String get contenu => '${j['contenu'] ?? j['extrait'] ?? ''}';
   String get statut => '${j['statut_traitement']}';
   String? get categorieIa => j['categorie_ia'] as String?;
   double? get confiance => (j['confiance'] as num?)?.toDouble();
@@ -235,4 +248,8 @@ class Tableau {
   int get revueOuvertes => entier(json(j['revue'])['total_ouvertes']);
   Map<String, int> get messagesParStatut => {for (final e in json(json(j['messages'])['par_statut']).entries) e.key: entier(e.value)};
   Json get promesses => json(j['promesses']);
+
+  /// Relances differees aujourd hui pour laisser assez de jours depuis le dernier message
+  /// (l ecart grandit avec le montant) : client, canal, total, prochaine date possible.
+  List<Json> get reportees => jsons(j['relances_reportees']);
 }

@@ -90,7 +90,7 @@ Future<DateTime?> choisirDate(BuildContext context, {DateTime? initiale, DateTim
   final ok = await montrerFeuille<bool>(
     context,
     titre: t('Choisir une date'),
-    contenu: (f) => Padding(
+    contenu: (f) => CorpsFeuille(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -177,8 +177,9 @@ Future<T?> choisirDansListe<T>(
   },
 );
 
-Future<Client?> choisirClient(BuildContext context) {
-  final clients = Donnees.instance.clients.values.toList()..sort((a, b) => a.nom.compareTo(b.nom));
+Future<Client?> choisirClient(BuildContext context) async {
+  final clients = [...await Donnees.instance.tousLesClients()]..sort((a, b) => a.nom.compareTo(b.nom));
+  if (!context.mounted) return null;
   return choisirDansListe<Client>(
     context,
     titre: t('Choisir un client'),

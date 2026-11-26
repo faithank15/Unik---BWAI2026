@@ -75,12 +75,13 @@ String motif(String? code) => switch (code) {
   'JOUR_NON_OUVRE' || 'JOUR_NON_OUVRE_REPORTE' => t('Dimanche ou jour férié : reporté au jour ouvré suivant.'),
   'ESPACEMENT_NON_RESPECTE' => t('Trop tôt après le dernier message : reportée.'),
   'DEJA_TRAITEE' => t('Déjà traitée.'),
+  'MANUELLE' => t('Demandée par une personne, hors calendrier.'),
   _ => lisible(code),
 };
 
 String canal(String c) => switch (c) {
   'WHATSAPP' => 'WhatsApp',
-  'EMAIL' => t('Courriel'),
+  'EMAIL' => t('E-mail'),
   _ => lisible(c),
 };
 
@@ -219,7 +220,7 @@ String evenement(String type) => switch (type) {
   'RELANCE_ANNULEE' => t('Relance annulée'),
   'RELANCE_SAUTEE' => t('Relance sautée'),
   'RELANCE_SUSPENDUE' => t('Relance suspendue'),
-  'RELANCE_REPORTEE_ESPACEMENT' => t('Relance reportée'),
+  'RELANCE_REPORTEE_ESPACEMENT' => t('Relance différée : dernier message trop récent'),
   'RELANCE_EN_ATTENTE_VALIDATION' => t('Relance à valider'),
   'RELANCE_VALIDEE' => t('Relance validée'),
   'RELANCE_REJETEE' => t('Relance rejetée'),
@@ -250,13 +251,17 @@ String evenement(String type) => switch (type) {
   'ACCES_REFUSE' => t('Accès refusé'),
   'REFERENCE_INTROUVABLE' => t('Référence introuvable'),
   'RESET' => t('Données réinitialisées'),
+  'RELANCE_MANUELLE_CREEE' => t('Relance manuelle demandée'),
+  'REDACTION_GENEREE' => t('Courriel rédigé par l’IA'),
+  'REDACTION_RELUE' => t('Formulation de l’IA relue'),
+  'REDACTION_REPLI' => t('Courriel envoyé avec le message type'),
   _ => lisible(type),
 };
 
 /// Les rejets d un import (codes du document de donnees), en mots.
 String motifRejet(String code) => switch (code) {
-  'EMAIL_MAL_FORME' => t('Adresse courriel mal formée'),
-  'TELEPHONE_MAL_FORME' => t('Numéro WhatsApp mal formé'),
+  'EMAIL_MAL_FORME' => t('Adresse e-mail non valide'),
+  'TELEPHONE_MAL_FORME' => t('Numéro WhatsApp non valide'),
   'CHAMP_OBLIGATOIRE_MANQUANT' => t('Champ obligatoire manquant'),
   'DOUBLON' || 'DOUBLON_DANS_LOT' => t('Doublon dans le fichier'),
   'IDENTIFIANT_EXISTANT_DIFFERENT' => t('Identifiant déjà connu avec d’autres valeurs'),
@@ -269,3 +274,42 @@ String confiance(double? c) {
   if (c == null) return t('Non classé');
   return t('Confiance {n} %', {'n': (c * 100).round()});
 }
+
+const joursSemaine = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI'];
+
+String jourSemaine(String j) => switch (j) {
+  'LUNDI' => t('Lundi'),
+  'MARDI' => t('Mardi'),
+  'MERCREDI' => t('Mercredi'),
+  'JEUDI' => t('Jeudi'),
+  'VENDREDI' => t('Vendredi'),
+  'SAMEDI' => t('Samedi'),
+  _ => lisible(j),
+};
+
+const plagesHoraires = ['AUCUNE', 'MATIN', 'APRES_MIDI'];
+
+String plageHoraire(String p) => switch (p) {
+  'MATIN' => t('Le matin'),
+  'APRES_MIDI' => t('L’après-midi'),
+  _ => t('Toute la journée'),
+};
+
+/// Le cas d un client, qui donne le fond du courriel ecrit par l IA.
+String casRedaction(String c) => switch (c) {
+  'PROMESSE_NON_TENUE' => t('Promesse non tenue'),
+  'APRES_PAIEMENT_PARTIEL' => t('Après un paiement partiel'),
+  'RETARDATAIRE_HABITUEL' => t('Client souvent en retard'),
+  'PREMIER_RETARD_BON_PAYEUR' => t('Premier retard d’un bon payeur'),
+  'STANDARD' => t('Cas courant'),
+  _ => lisible(c),
+};
+
+/// Le ton, de plus en plus ferme d une etape a l autre (jamais au-dela de celui de l etape).
+String tonRedaction(String t0) => switch (t0) {
+  'COURTOIS' => t('Ton courtois'),
+  'NEUTRE' => t('Ton neutre'),
+  'FERME' => t('Ton ferme'),
+  'FORMEL' => t('Ton formel'),
+  _ => lisible(t0),
+};
