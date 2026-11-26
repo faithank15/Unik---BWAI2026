@@ -67,11 +67,11 @@ def test_reglements_revue_messages_et_promesses_a_l_etat_initial(api, gest):
 
 def test_les_relances_du_jour_suivent_la_planification_et_l_envoi(api, gest):
     planifier(api, gest)
-    assert tdb(api, gest)["relances"] == {"planifiees": 18, "en_attente_validation": 0,
+    assert tdb(api, gest)["relances"] == {"planifiees": 16, "en_attente_validation": 0,
                                           "envoyees_sim": 0, "annulees": 0, "sautees": 16}
     envoyer(api, gest)
-    assert tdb(api, gest)["relances"] == {"planifiees": 0, "en_attente_validation": 4,
-                                          "envoyees_sim": 14, "annulees": 0, "sautees": 16}
+    assert tdb(api, gest)["relances"] == {"planifiees": 0, "en_attente_validation": 3,
+                                          "envoyees_sim": 13, "annulees": 0, "sautees": 16}
 
 
 def test_chaque_chiffre_renvoie_a_la_liste_qui_l_explique(api, gest):
@@ -225,10 +225,10 @@ def test_comparaison_a_la_regle_naive(api, gest):
     assert set(ref["injustifiees_par_motif"]) == {
         "SUSPENDU_CONTESTATION", "SUSPENDU_PROMESSE", "SUSPENDU_ECHEANCIER",
         "SUSPENDU_MESSAGE_EN_ATTENTE"}
-    assert sys_["messages_apres_regroupement"] == sys_["relances_preparees"] == 18
-    assert sys_["envois"] == 14 and sys_["annulations"] == 0
+    assert sys_["messages_apres_regroupement"] == sys_["relances_preparees"] == 16
+    assert sys_["envois"] == 13 and sys_["annulations"] == 0
     assert gain["relances_injustifiees_evitees"] == ref["nb_relances_injustifiees"]
-    assert gain["messages_economises_par_le_regroupement"] == sys_["lignes_preparees"] - 18 >= 3
+    assert gain["messages_economises_par_le_regroupement"] == sys_["lignes_preparees"] - 16 >= 3
     assert sys_["lignes_preparees"] < ref["nb_relances_naives"] + 100
 
 

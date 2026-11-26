@@ -26,10 +26,10 @@
       },
       {
         "date": "2026-12-21",
-        "client": "CLI-0025",
+        "client": "CLI-0026",
         "canal": "EMAIL",
-        "etape": "GROUPE",
-        "echeances": "ECH-0051:R1;ECH-0084:R2",
+        "etape": "R2",
+        "echeances": "ECH-0099:R2",
         "decision": "PREPAREE",
         "motif": "JOUR_NON_OUVRE_REPORTE"
       },
@@ -48,15 +48,6 @@
         "canal": "WHATSAPP",
         "etape": "GROUPE",
         "echeances": "ECH-0046:R2;ECH-0047:R2",
-        "decision": "PREPAREE",
-        "motif": "JOUR_NON_OUVRE_REPORTE"
-      },
-      {
-        "date": "2026-12-26",
-        "client": "CLI-0029",
-        "canal": "WHATSAPP",
-        "etape": "GROUPE",
-        "echeances": "ECH-0056:P;ECH-0100:R3;ECH-0119:R3",
         "decision": "PREPAREE",
         "motif": "JOUR_NON_OUVRE_REPORTE"
       }

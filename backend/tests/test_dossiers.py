@@ -2,7 +2,7 @@
 import pytest
 
 from tests.aides import compter
-from tests.aides_relances import D0, changer_date, envoyer, planifier, relance_du_client
+from tests.aides_relances import D0, changer_date, planifier, relance_du_client
 from tests.verite import lire_scenario
 
 
@@ -92,13 +92,27 @@ def test_S10_suspension_puis_reprise_apres_cloture(api, gest, valid):
     assert relance_du_client(api, gest, "CLI-0014", date=D0, statut="PLANIFIEE") is None
     api.post("/api/contestations/CTE-0002/cloturer", headers=valid, json={
         "resolution": "REJETEE", "commentaire": "rejetée"})
-    planifier(api, gest)                      # même jour : reprise à l'étape non traitée
-    voulu = a["apres_cloture_CTE_0002"][0]
-    r = relance_du_client(api, gest, "CLI-0014", date=D0, statut="PLANIFIEE")
-    assert r["etape"] == voulu["etape"] == "R2"
-    assert [x["echeance_id"] for x in r["lignes"]] == [voulu["echeances"].split(":")[0]]
-    envoyer(api, gest)
-    assert relance_du_client(api, gest, "CLI-0014", date=D0, statut="ENVOYEE_SIM")
+    planifier(api, gest)                      # même jour : la reprise est différée par l'espacement
+    # CLI-0014 : dernier envoi le 08/12, total 380 000 FCFA (x 1,5) en rattrapage (5 jours) :
+    # 8 jours exigés, donc rien le 15/12 (vérité terrain : liste vide), reprise ensuite.
+    assert a["apres_cloture_CTE_0002"] == []
+    assert relance_du_client(api, gest, "CLI-0014", date=D0, statut="PLANIFIEE") is None
+    reports = [e for e in api.get(
+        "/api/journal?type_evenement=RELANCE_REPORTEE_ESPACEMENT&limite=200",
+        headers=gest).json()["elements"] if e["objet_id"] == "CLI-0014"]
+    assert reports and '"ecart_minimal":8' in reports[-1]["details"].replace(" ", "")
+    # Le 16/12 le groupe inclut R3 de l'échéance 0096 : total 709 500 FCFA (x 2), donc 10 jours
+    # depuis le 08/12, soit le 18/12 : R2 de 0108 et R3 de 0096 dans un même message.
+    for jour in ("2026-12-16", "2026-12-17"):
+        changer_date(api, valid, jour)
+        planifier(api, gest)
+        assert relance_du_client(api, gest, "CLI-0014", date=jour, statut="PLANIFIEE") is None
+    changer_date(api, valid, "2026-12-18")
+    planifier(api, gest)
+    r = relance_du_client(api, gest, "CLI-0014", date="2026-12-18", statut="PLANIFIEE")
+    assert r["etape"] == "GROUPE"
+    assert sorted(x["echeance_id"] + ":" + x["etape_echeance"] for x in r["lignes"]) == [
+        "ECH-0096:R3", "ECH-0108:R2"]
 
 
 # ---- promesses --------------------------------------------------------------------------
@@ -258,10 +272,14 @@ def test_accord_respecte_quand_toutes_les_tranches_sont_soldees(api, gest, valid
 def test_S12_apres_acceptation_relance_sur_la_tranche_manquee_seulement(api, gest):
     a = lire_scenario("S12")["attendu"]
     planifier(api, gest)
+    le15 = {r["echeances"].split(":")[0] for r in a["relances"]}
     for tr in a["tranches_manquees"]:
         f = facture(api, gest, tr["facture_id"])
         r = relance_du_client(api, gest, f["client"]["id"], date=D0, etape="R1")
-        assert r["lignes"][0]["echeance_id"] == tr["echeance_id"]
+        if tr["echeance_id"] in le15:
+            assert r["lignes"][0]["echeance_id"] == tr["echeance_id"]
+        else:
+            assert r is None      # différée par l'espacement (voir test_scenarios_relances)
 
 
 def test_liste_des_accords(api, gest):

@@ -30,7 +30,7 @@ def montant(conn, facture_id):
 def test_R01_resume_de_planification(api, gest):
     r = planifier(api, gest)
     assert r["traitement_id"] == "TRT-0001" and r["date_reference"] == D0 and r["jour_ouvre"]
-    assert r["creees"] == 18 and r["sautees"] == 16 and r["escalades"] == 2
+    assert r["creees"] == 16 and r["sautees"] == 16 and r["escalades"] == 2
     assert {s["motif"] for s in r["suspendues"]} == {
         "SUSPENDU_CONTESTATION", "SUSPENDU_PROMESSE", "SUSPENDU_ECHEANCIER"}
 
@@ -116,17 +116,19 @@ def test_R06_espacement_minimal_deux_jours(api, gest, valid):
     assert r["reportees_espacement"] >= 0
 
 
-def test_R07_rattrapage_une_seule_etape_espacee_de_cinq_jours(api, gest, valid):
-    """Facture en retard de 45 jours : R1 le 15, puis R2 et R3 espacés d'au moins 5 jours."""
+def test_R07_rattrapage_une_seule_etape_espacee_de_huit_jours(api, gest, valid):
+    """Facture de 228 500 FCFA en retard de 45 jours : R1 le 15, puis R2 et R3 espacés de 8 jours
+    (rattrapage 5 jours x 1,5 pour un total entre 100 001 et 500 000 FCFA, arrondi au jour
+    supérieur). Jamais R3 d'un coup, jamais deux étapes le même jour."""
     dates = {}
-    for jour in ("2026-12-15", "2026-12-16", "2026-12-17", "2026-12-18", "2026-12-19",
-                 "2026-12-21", "2026-12-26"):
+    for jour in ("2026-12-15", "2026-12-16", "2026-12-18", "2026-12-21", "2026-12-22",
+                 "2026-12-23", "2026-12-24", "2026-12-29", "2026-12-30", "2026-12-31"):
         changer_date(api, valid, jour)
         planifier(api, gest)
         envoyer(api, gest)
         for x in relances(api, gest, client_id="CLI-0005", statut="ENVOYEE_SIM", date=jour):
             dates.setdefault(x["etape"], jour)
-    assert dates == {"R1": "2026-12-15", "R2": "2026-12-21", "R3": "2026-12-26"}
+    assert dates == {"R1": "2026-12-15", "R2": "2026-12-23", "R3": "2026-12-31"}
 
 
 # ---- suspensions -----------------------------------------------------------------------
@@ -295,7 +297,9 @@ def test_E07_jour_non_ouvre_la_relance_reste_planifiee_puis_part_le_lundi(api, g
 def test_E08_gros_montant_non_valide_n_est_jamais_envoye(api, gest, valid):
     planifier(api, gest)
     envoyer(api, gest)
-    for jour in ("2026-12-16", "2026-12-17", "2026-12-19"):
+    # CLI-0019 (600 000 FCFA, dernier envoi le 12/12) est différé de 4 jours puis passe en
+    # rattrapage (10 jours) : son message groupé n'est préparé que le 22/12.
+    for jour in ("2026-12-16", "2026-12-17", "2026-12-19", "2026-12-22"):
         changer_date(api, valid, jour)
         planifier(api, gest)
         envoyer(api, gest)

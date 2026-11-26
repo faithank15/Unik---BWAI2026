@@ -357,10 +357,7 @@ Merci et bonne journée !",CLI-0013|WHATSAPP|ECH-0095:P|2026-12-04
 REL-0046,CLI-0020,WHATSAPP,R3,2026-12-04,2026-12-04,ENVOYEE_SIM,,"Bonjour Mme Larissa Gnonlonfoun, dernier rappel de Entreprise Démo : les sommes suivantes sont toujours impayées.
 - Facture FA-2026-0486 : échéance du 19/11/2026, solde 117 500 FCFA
 Sans règlement ou réponse de votre part, nous examinerons avec vous les suites à donner à ce dossier. Référence de paiement : MM-SIM-2026-000046 (simulation : aucun paiement réel).",CLI-0020|WHATSAPP|ECH-0098:R3|2026-12-04
-REL-0047,CLI-0022,WHATSAPP,R2,2026-12-04,2026-12-04,ENVOYEE_SIM,,"Bonjour Mme Sylvie Houngbédji, malgré notre précédent rappel, les sommes suivantes restent impayées auprès de Entreprise Démo :
-- Facture FA-2026-0491 : échéance du 27/11/2026, solde 76 000 FCFA
-Merci de régulariser rapidement, référence MM-SIM-2026-000047 (simulation : aucun paiement réel). En cas de difficulté, répondez-nous pour en discuter.",CLI-0022|WHATSAPP|ECH-0103:R2|2026-12-04
-REL-0048,CLI-0030,EMAIL,R1,2026-12-04,2026-12-04,ENVOYEE_SIM,,"Objet : Rappel : règlement en attente – Entreprise Démo
+REL-0047,CLI-0030,EMAIL,R1,2026-12-04,2026-12-04,ENVOYEE_SIM,,"Objet : Rappel : règlement en attente – Entreprise Démo
 
 Bonjour Mme Claudine Djossou,
 
@@ -368,13 +365,13 @@ Sauf erreur de notre part, nous n'avons pas encore reçu le règlement de :
 - Facture FA-2026-0489 : échéance du 03/12/2026, solde 326 500 FCFA
 
 Total restant dû : 326 500 FCFA.
-Référence de paiement : MM-SIM-2026-000048 (simulation : aucun paiement réel).
+Référence de paiement : MM-SIM-2026-000047 (simulation : aucun paiement réel).
 
 Si vous avez déjà effectué ce règlement, merci de nous l'indiquer ; dans le cas contraire, nous vous remercions de procéder au paiement.
 
 Cordialement,
 Entreprise Démo",CLI-0030|EMAIL|ECH-0101:R1|2026-12-04
-REL-0049,CLI-0010,EMAIL,R1,2026-12-05,2026-12-05,ENVOYEE_SIM,,"Objet : Rappel : règlement en attente – Entreprise Démo
+REL-0048,CLI-0010,EMAIL,R1,2026-12-05,2026-12-05,ENVOYEE_SIM,,"Objet : Rappel : règlement en attente – Entreprise Démo
 
 Bonjour Mme Estelle Sèlè,
 
@@ -382,17 +379,20 @@ Sauf erreur de notre part, nous n'avons pas encore reçu le règlement de :
 - Facture FA-2026-0497 : échéance du 04/12/2026, solde 70 500 FCFA (pénalité de retard prévue : 2,4 % par mois)
 
 Total restant dû : 70 500 FCFA.
-Référence de paiement : MM-SIM-2026-000049 (simulation : aucun paiement réel).
+Référence de paiement : MM-SIM-2026-000048 (simulation : aucun paiement réel).
 
 Si vous avez déjà effectué ce règlement, merci de nous l'indiquer ; dans le cas contraire, nous vous remercions de procéder au paiement.
 
 Cordialement,
 Entreprise Démo",CLI-0010|EMAIL|ECH-0109:R1|2026-12-05
-REL-0050,CLI-0011,WHATSAPP,GROUPE,2026-12-05,2026-12-05,ENVOYEE_SIM,,"Bonjour M. Hilaire Tohoungba, malgré notre précédent rappel, les sommes suivantes restent impayées auprès de Entreprise Démo :
+REL-0049,CLI-0011,WHATSAPP,GROUPE,2026-12-05,2026-12-05,ENVOYEE_SIM,,"Bonjour M. Hilaire Tohoungba, malgré notre précédent rappel, les sommes suivantes restent impayées auprès de Entreprise Démo :
 - Facture FA-2026-0479 : échéance du 28/11/2026, solde 140 000 FCFA (pénalité de retard prévue : 1,4 % par mois)
 - Facture FA-2026-0480 : échéance du 28/11/2026, solde 140 000 FCFA (pénalité de retard prévue : 1,9 % par mois)
 - Facture FA-2026-0481 : échéance du 28/11/2026, solde 140 000 FCFA (pénalité de retard prévue : 1,4 % par mois)
-Merci de régulariser rapidement, référence MM-SIM-2026-000050 (simulation : aucun paiement réel). En cas de difficulté, répondez-nous pour en discuter.",CLI-0011|WHATSAPP|ECH-0091:R2+ECH-0092:R2+ECH-0093:R2|2026-12-05
+Merci de régulariser rapidement, référence MM-SIM-2026-000049 (simulation : aucun paiement réel). En cas de difficulté, répondez-nous pour en discuter.",CLI-0011|WHATSAPP|ECH-0091:R2+ECH-0092:R2+ECH-0093:R2|2026-12-05
+REL-0050,CLI-0022,WHATSAPP,R2,2026-12-05,2026-12-05,ENVOYEE_SIM,,"Bonjour Mme Sylvie Houngbédji, malgré notre précédent rappel, les sommes suivantes restent impayées auprès de Entreprise Démo :
+- Facture FA-2026-0491 : échéance du 27/11/2026, solde 76 000 FCFA
+Merci de régulariser rapidement, référence MM-SIM-2026-000050 (simulation : aucun paiement réel). En cas de difficulté, répondez-nous pour en discuter.",CLI-0022|WHATSAPP|ECH-0103:R2|2026-12-05
 REL-0051,CLI-0005,WHATSAPP,R1,2026-12-07,2026-12-07,ENVOYEE_SIM,,"Bonjour Mme Pélagie Kossoungbo, sauf erreur de notre part, nous n'avons pas encore reçu le règlement de Entreprise Démo pour :
 - Facture FA-2026-0509 : échéance du 05/12/2026, solde 350 000 FCFA
 Référence de paiement : MM-SIM-2026-000051 (simulation : aucun paiement réel).

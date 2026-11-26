@@ -33,6 +33,21 @@ MARGE_PROMESSE = 2
 DELAI_ESCALADE = 5
 ESPACEMENT_NORMAL = 2
 ESPACEMENT_RATTRAPAGE = 5
+SEUIL_ESPACEMENT_MOYEN = 100000
+COEF_MOYEN_DIXIEMES = 15
+COEF_GROS_DIXIEMES = 20
+
+
+def ecart_effectif(rattrapage, total):
+    """Espacement du message : standard x coefficient du montant, arrondi au jour supérieur
+    (extension IA, 3.1). Écrit ici indépendamment du code de l'API."""
+    base = ESPACEMENT_RATTRAPAGE if rattrapage else ESPACEMENT_NORMAL
+    coef = 10
+    if total > SEUIL_GROS:
+        coef = COEF_GROS_DIXIEMES
+    elif total > SEUIL_ESPACEMENT_MOYEN:
+        coef = COEF_MOYEN_DIXIEMES
+    return (base * coef + 9) // 10
 EM_MIN = date(2026, 8, 3)
 EM_MAX = date(2026, 12, 14)
 ENTREPRISE = "Entreprise Démo"
@@ -68,10 +83,23 @@ def est_ouvre(d):
     return d.weekday() != 6 and d not in SET_FERIES
 
 
-def prochain_ouvre(d):
-    while not est_ouvre(d):
+def prochain_ouvre(d, evites=()):
+    """Prochain jour ouvré qui n'est pas un jour que le client préfère éviter (0 = lundi)."""
+    while not est_ouvre(d) or d.weekday() in evites:
         d = plus(d, 1)
     return d
+
+
+NOMS_JOURS = ["LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI", "SAMEDI"]
+# Préférences ajoutées par le gestionnaire (extension IA, section 1) : clients sans autre test.
+# CLI-0022 évite le vendredi (sa R1 du 18/12 passe au samedi), CLI-0026 évite le samedi (sa R2 du
+# 19/12 passe au lundi 21), CLI-0011 en a deux ; les autres clients n'ont aucun jour exclu.
+PREFS_EXT = {22: ("VENDREDI", "MATIN"), 26: ("SAMEDI", "APRES_MIDI"),
+             11: ("MARDI;JEUDI", "APRES_MIDI")}
+
+
+def jours_evites(prefs_client):
+    return {NOMS_JOURS.index(j) for j in prefs_client["jours_a_eviter"].split(";") if j}
 
 
 # ----------------------------------------------------------------------------------
@@ -158,8 +186,10 @@ def construire_clients():
             pref, aut, cons = "WHATSAPP", "WHATSAPP;EMAIL", 1
         else:
             pref, aut, cons = ("EMAIL" if i % 2 == 0 else "WHATSAPP"), "WHATSAPP;EMAIL", 1
+        jours, plage = PREFS_EXT.get(i, ("", "AUCUNE"))
         prefs.append(dict(client_id=cid(i), canal_prefere=pref, canaux_autorises=aut,
-                          consentement_relance=cons, interlocuteur=inter))
+                          consentement_relance=cons, interlocuteur=inter,
+                          jours_a_eviter=jours, plage_horaire=plage))
     return clients, prefs
 
 
@@ -671,12 +701,13 @@ def jour_sim(et, d):
         steps = et.steps.setdefault(e["id"], {})
         p_applicable = not accord_accepte(et, e["facture"])
         cand, saute = None, []
+        evites = jours_evites(et.prefs[c])
         for s in ORDRE:
             if s == "P" and not p_applicable:
                 continue
             if s in steps:
                 continue
-            eff = prochain_ouvre(date_brute(e["date"], s))
+            eff = prochain_ouvre(date_brute(e["date"], s), evites)
             if s == "P" and eff < d:
                 saute.append(("P", "P_APRES_ECHEANCE" if e["date"] < d else "P_TROP_PROCHE"))
                 continue
@@ -699,18 +730,19 @@ def jour_sim(et, d):
             tard = False
             if prec:
                 x = prec[-1]
-                tard = steps[x][1] > prochain_ouvre(date_brute(e["date"], x))
+                tard = steps[x][1] > prochain_ouvre(date_brute(e["date"], x), evites)
+            if d.weekday() in evites:
+                continue    # jour à éviter pour ce client : rien aujourd'hui, prochain jour permis
             groupes[(c, canal)].append(dict(
                 e=e, step=s, eff=eff, raw=date_brute(e["date"], s),
                 rattrapage=(eff < d) or tard))
     # 6-7. regroupement, espacement, gros montant, envoi simulé
     for (c, canal), lignes in sorted(groupes.items()):
         dernier = max(et.envois.get((c, canal), [date.min]))
-        ecart = ESPACEMENT_RATTRAPAGE if any(l["rattrapage"] for l in lignes) \
-            else ESPACEMENT_NORMAL
+        total = sum(solde_ech(et, l["e"]["id"], d) for l in lignes)
+        ecart = ecart_effectif(any(l["rattrapage"] for l in lignes), total)
         if dernier != date.min and (d - dernier).days < ecart:
             continue
-        total = sum(solde_ech(et, l["e"]["id"], d) for l in lignes)
         ton = max((l["step"] for l in lignes), key=lambda s: GRAVITE[s])
         etape = lignes[0]["step"] if len(lignes) == 1 else "GROUPE"
         decision = "EN_ATTENTE_VALIDATION" if total > SEUIL_GROS else "PREPAREE"
@@ -1068,7 +1100,7 @@ def construire_historique(F, et, prefs, clients_par_id, contest, promesses, ech_
             for s in ORDRE:
                 if s == "P" and n in range(101, 106):
                     continue
-                eff = prochain_ouvre(date_brute(e["date"], s))
+                eff = prochain_ouvre(date_brute(e["date"], s), jours_evites(prefs[c]))
                 if eff >= D0:
                     break
                 if eff < f["em"]:
@@ -1852,7 +1884,7 @@ def ecrire_tout(w, out, seed):
     ecrire_csv(os.path.join(nominal, "clients.csv"), COL_CLI, w["clients"])
     ecrire_csv(os.path.join(nominal, "preferences_contact.csv"),
                ["client_id", "canal_prefere", "canaux_autorises", "consentement_relance",
-                "interlocuteur"], w["prefs_l"])
+                "interlocuteur", "jours_a_eviter", "plage_horaire"], w["prefs_l"])
     ecrire_csv(os.path.join(nominal, "factures.csv"), COL_FAC,
                [ligne_facture(F[n]) for n in range(1, 121)])
     ecrire_csv(os.path.join(nominal, "echeances.csv"), COL_ECH, [ligne_ech(e) for e in
@@ -1970,6 +2002,9 @@ def ecrire_tout(w, out, seed):
         seed=seed, date_reference=iso(D0), seuil_gros_montant=SEUIL_GROS, jours_p=-3,
         jours_r1=1, jours_r2=7, jours_r3=15, espacement_normal_jours=ESPACEMENT_NORMAL,
         espacement_rattrapage_jours=ESPACEMENT_RATTRAPAGE,
+        seuil_espacement_moyen=SEUIL_ESPACEMENT_MOYEN,
+        coef_espacement_moyen_dixiemes=COEF_MOYEN_DIXIEMES,
+        coef_espacement_gros_dixiemes=COEF_GROS_DIXIEMES,
         delai_escalade_jours=DELAI_ESCALADE, marge_promesse_jours=MARGE_PROMESSE,
         plafond_promesse_jours=30, plafond_retard_jours=30, plafond_solde=1000000,
         poids_anciennete=40, poids_solde=35, poids_historique=25,
@@ -1997,8 +2032,13 @@ def verifier_attendus(w, res):
     if len(prep) < 10:
         erreurs.append(f"{len(prep)} messages éligibles le 15/12, attendu au moins 10")
     gros = [g for g in d1 if g["decision"] == "EN_ATTENTE_VALIDATION"]
-    if len(gros) != 4 or sorted(len(g["lignes"]) for g in gros) != [1, 1, 1, 2]:
+    # Espacement majoré par le montant (extension IA, 3.1) : CLI-0019 (total 600 000 FCFA, dernier
+    # envoi le 12/12) n'est plus éligible le 15/12 (4 jours exigés) ; son message groupé de gros
+    # montant n'apparaît qu'après son rattrapage. Il reste 3 gros montants d'une ligne.
+    if len(gros) != 3 or sorted(len(g["lignes"]) for g in gros) != [1, 1, 1]:
         erreurs.append(f"gros montants : {[(g['client'], len(g['lignes'])) for g in gros]}")
+    if any(g["client"] == "CLI-0019" for g in d1):
+        erreurs.append("CLI-0019 devrait être différé par l'espacement le 15/12")
     if not any(g["client"] == "CLI-0024" and g["etape"] == "GROUPE" and g["ton"] == "P"
                for g in d1):
         erreurs.append("0039 et 0040 ne forment pas un message P regroupé le 15/12")

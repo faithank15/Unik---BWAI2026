@@ -49,10 +49,13 @@ def _lire(nom: str, contenu: bytes) -> list[dict[str, str]]:
     lecteur = csv.DictReader(io.StringIO(texte, newline=""))
     entetes = lecteur.fieldnames or []
     attendus = dom.ENTETES[nom]
-    if len(set(entetes)) != len(entetes) or sorted(entetes) != sorted(attendus):
+    facultatifs = dom.ENTETES_FACULTATIFS.get(nom, [])
+    if (len(set(entetes)) != len(entetes) or not set(attendus) <= set(entetes)
+            or not set(entetes) <= set(attendus) | set(facultatifs)):
         raise Validation(f"En-têtes invalides dans {nom}.csv : un en-tête manquant ou inconnu "
                          "rejette le fichier entier.",
-                         {"fichier": f"{nom}.csv", "attendus": attendus, "recus": entetes})
+                         {"fichier": f"{nom}.csv", "attendus": attendus,
+                          "facultatifs": facultatifs, "recus": entetes})
     return [dom.nettoyer(r) for r in lecteur]
 
 
@@ -174,7 +177,8 @@ def _valider(conn: sqlite3.Connection, lignes: dict[str, list[dict]], rap: _Rapp
 
     # -- préférences de contact
     prefs_db = {r["client_id"]: (r["canal_prefere"], r["canaux_autorises"],
-                                 r["consentement_relance"], r["interlocuteur"])
+                                 r["consentement_relance"], r["interlocuteur"],
+                                 r["jours_a_eviter"], r["plage_horaire"])
                 for r in conn.execute("SELECT * FROM preferences_contact")}
     vus_prefs: dict[str, tuple] = {}
     for n, r in enumerate(lignes.get("preferences_contact", []), 2):
@@ -195,8 +199,19 @@ def _valider(conn: sqlite3.Connection, lignes: dict[str, list[dict]], rap: _Rapp
             rap.rejeter("preferences_contact", n, "CLIENT_INCONNU",
                         f"Le client {r['client_id']} est inconnu.", unite)
             continue
+        jours = dom.lire_jours_a_eviter(r.get("jours_a_eviter", ""))
+        plage = r.get("plage_horaire") or "AUCUNE"
+        inter = dom.nettoyer_interlocuteur(r["interlocuteur"])
+        if (jours is None or plage not in dom.PLAGES_HORAIRES
+                or (inter and len(inter) > dom.INTERLOCUTEUR_MAX)):
+            rap.rejeter("preferences_contact", n, "VALEUR_INVALIDE",
+                        "jours_a_eviter (lundi à samedi), plage_horaire (MATIN, APRES_MIDI, "
+                        f"AUCUNE) ou interlocuteur (80 caractères) invalide pour "
+                        f"{r['client_id']}.", unite)
+            continue
+        r["jours_a_eviter"], r["plage_horaire"], r["interlocuteur"] = jours, plage, inter or ""
         t = (r["canal_prefere"], r["canaux_autorises"], int(r["consentement_relance"]),
-             dom.vers_none(r["interlocuteur"]))
+             inter, jours, plage)
         connu = prefs_db.get(r["client_id"]) or vus_prefs.get(r["client_id"])
         if connu is not None:
             code = "DOUBLON_EXACT" if tuple(connu) == t else "IDENTIFIANT_EXISTANT_DIFFERENT"
@@ -424,13 +439,17 @@ def _inserer(conn: sqlite3.Connection, s: dict, import_id: str) -> None:
                      (r["id"], r["raison_sociale"], dom.vers_none(r["secteur"]),
                       dom.vers_none(r["ville"]), dom.vers_none(r["email"]),
                       dom.vers_none(r["whatsapp"]), int(r["actif"])))
+    aujourdhui = clock.date_reference(conn).isoformat()     # date métier : reset reproductible
     for r in s["preferences_contact"]:
+        provenance = {champ: {"source": "IMPORT", "date": aujourdhui} for champ in (
+            "canal_prefere", "jours_a_eviter", "plage_horaire", "interlocuteur")}
         conn.execute("INSERT INTO preferences_contact(client_id, canal_prefere, "
-                     "canaux_autorises, consentement_relance, interlocuteur) "
-                     "VALUES (?,?,?,?,?)", (r["client_id"], r["canal_prefere"],
-                                            r["canaux_autorises"],
-                                            int(r["consentement_relance"]),
-                                            dom.vers_none(r["interlocuteur"])))
+                     "canaux_autorises, consentement_relance, interlocuteur, jours_a_eviter, "
+                     "plage_horaire, provenance) VALUES (?,?,?,?,?,?,?,?)",
+                     (r["client_id"], r["canal_prefere"], r["canaux_autorises"],
+                      int(r["consentement_relance"]), dom.vers_none(r["interlocuteur"]),
+                      r["jours_a_eviter"], r["plage_horaire"],
+                      json.dumps(provenance, sort_keys=True)))
     for r in s["factures"]:
         conn.execute(
             "INSERT INTO factures(id, client_id, numero, date_emission, montant_ttc, "

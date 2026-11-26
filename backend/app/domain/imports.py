@@ -22,6 +22,10 @@ ENTETES = {
                   "accord_id"],
     "accords_echeancier": ["id", "facture_id", "date_accord", "statut", "nb_tranches"],
 }
+# Colonnes facultatives (extension IA, 1.1) : un fichier d'avant l'extension reste accepté.
+ENTETES_FACULTATIFS = {"preferences_contact": ["jours_a_eviter", "plage_horaire"]}
+PLAGES_HORAIRES = {"MATIN", "APRES_MIDI", "AUCUNE"}
+INTERLOCUTEUR_MAX = 80
 OBLIGATOIRES = ("clients", "factures", "echeances")
 ENTETES_PAIEMENTS = ["id", "client_id", "date_paiement", "montant", "mode",
                      "reference_externe", "source", "statut", "references_indiquees"]
@@ -52,6 +56,28 @@ def champs_vides(ligne: dict[str, str], obligatoires: list[str]) -> list[str]:
 
 def nettoyer(ligne: dict[str, str]) -> dict[str, str]:
     return {k: (v or "").strip() for k, v in ligne.items()}
+
+
+def nettoyer_interlocuteur(texte: str | None) -> str | None:
+    """Nom du contact comptable : caractères de contrôle retirés, espaces réduits. Jamais une
+    instruction pour le LLM. None si vide."""
+    if not texte:
+        return None
+    propre = " ".join("".join(" " if c.isspace() else c for c in texte
+                              if c.isspace() or c.isprintable()).split())
+    return propre or None
+
+
+def lire_jours_a_eviter(texte: str) -> str | None:
+    """'MARDI;VENDREDI' normalisé (ordre de la semaine, sans doublon), '' si aucun, None si une
+    valeur sort de la liste fermée (lundi à samedi : le dimanche est déjà exclu)."""
+    from app.domain.calendrier import JOURS_PREFERENCES
+    if not texte:
+        return ""
+    noms = [n.strip().upper() for n in texte.split(";") if n.strip()]
+    if any(n not in JOURS_PREFERENCES for n in noms):
+        return None
+    return ";".join(j for j in JOURS_PREFERENCES if j in noms)
 
 
 def vers_none(texte: str) -> str | None:

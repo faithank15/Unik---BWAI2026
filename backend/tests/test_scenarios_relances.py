@@ -73,12 +73,12 @@ def test_S09_gros_montants_validation_avant_envoi(api, gest, valid):
     planifier(api, gest)
     envoyer(api, gest)
     attente = relances(api, gest, statut="EN_ATTENTE_VALIDATION", date=D0)
-    assert len(attente) == a["nb"] == 4
+    assert len(attente) == a["nb"] == 3     # CLI-0019 est différé par l'espacement (x2)
     obtenu = sorted((x["client_id"], x["canal"], x["etape"]) for x in attente)
     voulu = sorted((g["client"], g["canal"], g["etape"]) for g in a["en_attente_validation"])
     assert obtenu == voulu
     assert sum(1 for g in a["en_attente_validation"] if len(g["lignes"]) > 1) == \
-        a["dont_regroupes"] == 1
+        a["dont_regroupes"] == 0
     for x in attente:
         d = relance_du_client(api, gest, x["client_id"], date=D0, statut="EN_ATTENTE_VALIDATION")
         assert d["total_solde"] > 500_000 and d["revue_id"] and d["date_envoi"] is None
@@ -116,13 +116,30 @@ def test_S11_promesse_tenue_apres_paiement(api, gest, db_chargee):
 
 
 def test_S12_relance_sur_la_tranche_manquee_seulement(api, gest):
+    """Seule la tranche manquée est relancée. Sa relance du 15/12 n'existe que si l'espacement
+    le permet : CLI-0030 (dernier envoi récent, total entre 100 001 et 500 000 FCFA) est différé."""
     a = lire_scenario("S12")["attendu"]
     planifier(api, gest)
+    le15 = {r["echeances"].split(":")[0] for r in a["relances"]}
+    assert le15 == {"ECH-0119"}
     for t in a["tranches_manquees"]:
         facture = api.get(f"/api/factures/{t['facture_id']}", headers=gest).json()
         r = relance_du_client(api, gest, facture["client"]["id"], date=D0, etape="R1")
-        assert [x["echeance_id"] for x in r["lignes"]] == [t["echeance_id"]]
-        assert r["total_solde"] == t["solde"] == r["lignes"][0]["solde"]
+        if t["echeance_id"] in le15:
+            assert [x["echeance_id"] for x in r["lignes"]] == [t["echeance_id"]]
+            assert r["total_solde"] == t["solde"] == r["lignes"][0]["solde"]
+        else:
+            assert r is None
+
+
+def test_S12_tranche_differee_relancee_dans_un_message_groupe(api, gest, valid, db_chargee):
+    a = lire_scenario("S12")["attendu"]
+    obs = simuler(api, db_chargee, gest, valid, date(2026, 12, 15), date(2026, 12, 18))
+    manquee = next(t["echeance_id"] for t in a["tranches_manquees"]
+                   if t["echeance_id"] not in {r["echeances"].split(":")[0] for r in a["relances"]})
+    premieres = [x for x in obs if x[5] == "PREPAREE" and f"{manquee}:R1" in x[4]]
+    assert [x[0] for x in premieres] == ["2026-12-18"]
+    assert premieres[0][3] == "GROUPE" and premieres[0][6] == "REGROUPE"
 
 
 def test_S13_message_regroupe(api, gest, valid, db_chargee):
@@ -167,7 +184,7 @@ def test_S16_rappel_p_saute(api, gest):
 def test_S19_lot_interrompu_puis_repris(api, gest, valid, db_chargee):
     a = lire_scenario("S19")["attendu"]
     planifier(api, gest)
-    assert a["relances_a_envoyer"] == 14
+    assert a["relances_a_envoyer"] == 13
     api.put("/api/parametres/simulation_interruption_apres", headers=valid,
             json={"valeur": str(a["apres_interruption"])})
     r1 = envoyer(api, gest)

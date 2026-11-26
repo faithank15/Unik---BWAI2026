@@ -3,6 +3,7 @@
 Tout chiffre affiché renvoie à la liste (route) qui l'explique ; tout résultat calculé (solde,
 statut, rang de priorité, relance annulée) renvoie aux pièces et événements qui le produisent.
 """
+import json
 import sqlite3
 from collections import Counter
 
@@ -57,6 +58,16 @@ def tableau_de_bord(conn: sqlite3.Connection) -> dict:
     par_cat = Counter(r[0] for r in conn.execute(
         "SELECT COALESCE(categorie_validee, categorie_ia) FROM messages_entrants "
         "WHERE COALESCE(categorie_validee, categorie_ia) IS NOT NULL"))
+    reportees = []
+    for r in conn.execute(
+            "SELECT objet_id, details FROM journal WHERE type_evenement = "
+            "'RELANCE_REPORTEE_ESPACEMENT' AND date_reference = ? ORDER BY id", (ref,)):
+        d = json.loads(r["details"] or "{}")
+        reportees.append({"client_id": r["objet_id"], "canal": d.get("canal"),
+                          "raison": "ESPACEMENT_MINIMAL", "total": d.get("total"),
+                          "dernier_envoi": d.get("dernier_envoi"),
+                          "ecart_minimal_jours": d.get("ecart_minimal"),
+                          "prochaine_date_possible": d.get("prochaine_date_possible")})
     prom = Counter(r[0] for r in conn.execute("SELECT statut FROM promesses_paiement"))
     tenues, non_tenues = prom["TENUE"], prom["NON_TENUE"]
     return {
@@ -72,6 +83,7 @@ def tableau_de_bord(conn: sqlite3.Connection) -> dict:
                      "envoyees_sim": rel["ENVOYEE_SIM"], "annulees": rel["ANNULEE"],
                      "sautees": rel["SAUTEE"]},
         "actions_suspendues": {m: susp.get(m, 0) for m in MOTIFS_SUSPENSION},
+        "relances_reportees": reportees,
         "reglements_simules": {"total": total_reglements, "par_mode": dict(modes),
                                "non_affectes": non_affectes},
         "revue": {"total_ouvertes": sum(revue.values()), "par_type": dict(revue)},

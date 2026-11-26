@@ -29,7 +29,7 @@ def test_S08_CO01_deux_a_huit_traitements_paralleles_une_seule_action(
         api, gest, reglages_charge):
     planifier(api, gest)
     a_envoyer = len(relances(api, gest, statut="PLANIFIEE", date=D0))
-    assert a_envoyer == 18          # 14 à envoyer, 4 gros montants à valider
+    assert a_envoyer == 16          # 13 à envoyer, 3 gros montants à valider (CLI-0019 différé)
     deja = compter(connecter(reglages_charge.database_path), "envois_simules")
 
     def cible():
@@ -38,7 +38,7 @@ def test_S08_CO01_deux_a_huit_traitements_paralleles_une_seule_action(
         c.close()
     lancer(8, cible)
     c = connecter(reglages_charge.database_path)
-    assert compter(c, "envois_simules") == deja + 14
+    assert compter(c, "envois_simules") == deja + 13
     dupl = c.execute("SELECT relance_id, COUNT(*) FROM envois_simules GROUP BY relance_id "
                      "HAVING COUNT(*) > 1").fetchall()
     assert dupl == []
@@ -48,7 +48,7 @@ def test_S08_CO01_deux_a_huit_traitements_paralleles_une_seule_action(
     assert c.execute("SELECT COUNT(*) FROM relances WHERE statut = 'PLANIFIEE'"
                      ).fetchone()[0] == 0
     assert c.execute("SELECT COUNT(*) FROM relances WHERE statut = 'EN_ATTENTE_VALIDATION'"
-                     ).fetchone()[0] == 4
+                     ).fetchone()[0] == 3
 
 
 def test_CO01_meme_relance_envoyee_par_plusieurs_threads_sans_erreur(api, gest, reglages_charge):
@@ -129,7 +129,7 @@ def test_planifications_paralleles_ne_creent_aucun_doublon(api, gest, reglages_c
     lancer(4, cible)
     c = connecter(reglages_charge.database_path)
     assert c.execute("SELECT COUNT(*) FROM relances WHERE date_prevue = ? AND statut = "
-                     "'PLANIFIEE'", (D0,)).fetchone()[0] == 14 + 4
+                     "'PLANIFIEE'", (D0,)).fetchone()[0] == 13 + 3
     assert c.execute("SELECT cle_idempotence, COUNT(*) FROM relances GROUP BY "
                      "cle_idempotence HAVING COUNT(*) > 1").fetchall() == []
     assert c.execute("SELECT COUNT(*) FROM file_revue WHERE type = 'ESCALADE'"
@@ -152,7 +152,7 @@ def test_CO06_base_occupee_reessai_borne_jamais_d_echec_silencieux(reglages_char
     assert t.is_alive()          # elle attend le verrou
     c1.execute("ROLLBACK")
     t.join(timeout=10)
-    assert fin["r"] == 18
+    assert fin["r"] == 16
 
 
 # ---- reprise après interruption ---------------------------------------------------------
@@ -167,13 +167,13 @@ def test_S19_RP01_lot_interrompu_apres_5_puis_repris_sans_doublon(api, gest, val
                               "AND date_envoi = ?", (D0,)).fetchone()[0] == 5
     lot = db_chargee.execute("SELECT statut, nb_total, nb_traites FROM traitements_lot "
                              "WHERE id = ?", (r1["traitement_id"],)).fetchone()
-    assert tuple(lot) == ("INTERROMPU", 18, 5)
+    assert tuple(lot) == ("INTERROMPU", 16, 5)
     # la simulation est consommée : la reprise va jusqu'au bout
     r2 = envoyer(api, gest)
-    assert r2["statut"] == "TERMINE" and r2["nb_total"] == 13 and r2["envoyees"] == 9
-    assert r2["en_attente_validation"] == 4
+    assert r2["statut"] == "TERMINE" and r2["nb_total"] == 11 and r2["envoyees"] == 8
+    assert r2["en_attente_validation"] == 3
     assert db_chargee.execute("SELECT COUNT(*) FROM relances WHERE statut = 'ENVOYEE_SIM' "
-                              "AND date_envoi = ?", (D0,)).fetchone()[0] == 14
+                              "AND date_envoi = ?", (D0,)).fetchone()[0] == 13
     assert db_chargee.execute("SELECT relance_id FROM envois_simules GROUP BY relance_id "
                               "HAVING COUNT(*) > 1").fetchall() == []
 
@@ -186,9 +186,9 @@ def test_reprise_apres_replanification_aucun_doublon(api, gest, valid, db_charge
     planifier(api, gest)           # replanifier au milieu d'un lot ne recrée rien
     envoyer(api, gest)
     assert db_chargee.execute("SELECT COUNT(*) FROM relances WHERE date_prevue = ? AND "
-                              "statut = 'ENVOYEE_SIM'", (D0,)).fetchone()[0] == 14
+                              "statut = 'ENVOYEE_SIM'", (D0,)).fetchone()[0] == 13
     assert db_chargee.execute("SELECT COUNT(*) FROM relances WHERE date_prevue = ?",
-                              (D0,)).fetchone()[0] == 14 + 4 + 16
+                              (D0,)).fetchone()[0] == 13 + 3 + 16
 
 
 def test_RP03_atomicite_une_erreur_pendant_l_envoi_annule_tout(api, gest, reglages_charge,

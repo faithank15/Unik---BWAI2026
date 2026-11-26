@@ -53,28 +53,10 @@
             "R1"
           ]
         ]
-      },
-      {
-        "client": "CLI-0019",
-        "canal": "WHATSAPP",
-        "etape": "GROUPE",
-        "ton": "R1",
-        "decision": "EN_ATTENTE_VALIDATION",
-        "total": 600000,
-        "lignes": [
-          [
-            "ECH-0143",
-            "R1"
-          ],
-          [
-            "ECH-0144",
-            "R1"
-          ]
-        ]
       }
     ],
-    "nb": 4,
-    "dont_regroupes": 1,
+    "nb": 3,
+    "dont_regroupes": 0,
     "envoi_avant_validation": 0,
     "revue_type": "GROS_MONTANT",
     "validation_par": "VALIDATEUR (un GESTIONNAIRE reçoit 403)"

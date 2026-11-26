@@ -83,6 +83,9 @@ def charger():
     return d
 
 
+NOMS_JOURS = ["LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI", "SAMEDI"]
+
+
 def est_ouvre(d, feries):
     return d.weekday() != 6 and d.isoformat() not in feries
 
@@ -200,6 +203,18 @@ def integrite(d):
         if a["echeance_id"] not in ec or (a["paiement_id"] not in pa and
                                           not a["paiement_id"].startswith("AVO-")):
             m.append(f"affectation orpheline {a['paiement_id']}/{a['echeance_id']}")
+    # Préférences saisies par le gestionnaire (extension IA, 1.1) : listes fermées
+    for p in d.prefs:
+        jours = [j for j in p.get("jours_a_eviter", "").split(";") if j]
+        if any(j not in ("LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI", "SAMEDI")
+               for j in jours):
+            m.append(f"{p['client_id']} : jours_a_eviter invalide ({jours})")
+        if p.get("plage_horaire", "AUCUNE") not in ("MATIN", "APRES_MIDI", "AUCUNE"):
+            m.append(f"{p['client_id']} : plage_horaire invalide")
+        if len(p.get("interlocuteur", "")) > 80:
+            m.append(f"{p['client_id']} : interlocuteur de plus de 80 caractères")
+    if not any(p.get("jours_a_eviter") for p in d.prefs):
+        m.append("aucun client avec un jour à éviter (le report n'est pas testé)")
     return m
 
 
@@ -404,9 +419,12 @@ def relances_hist(d):
         seq = [s for _, s, _ in v]
         if seq != ordre[:len(seq)] and seq != ordre[1:1 + len(seq)]:
             m.append(f"{e} : étapes {seq} non contiguës")
+        client = {f["id"]: f["client_id"] for f in d.fac}[ech[e]["facture_id"]]
+        evites = {NOMS_JOURS.index(j) for j in prefs[client].get("jours_a_eviter", "").split(";")
+                  if j}
         for dt, s, statut in v:
             brut = plus(pd(ech[e]["date_echeance"]), decal[s])
-            while not est_ouvre(brut, d.feries):
+            while not est_ouvre(brut, d.feries) or brut.weekday() in evites:
                 brut = plus(brut, 1)
             if brut.isoformat() != dt:
                 m.append(f"{e} {s} : date prévue {dt} ≠ calendrier {brut}")
@@ -735,12 +753,20 @@ def verification_manuelle(d):
         m.append("0042 : P sauté (P_TROP_PROCHE) attendu le 12-15")
     if not trouve("2026-12-15", client_id="CLI-0001", etape="R1", decision="PREPAREE"):
         m.append("0061 : R1 attendue le 12-15")
-    if not trouve("2026-12-21", client_id="CLI-0025", motif="JOUR_NON_OUVRE_REPORTE"):
-        m.append("0044 : R1 du dimanche 12-20 reportée au lundi 12-21 attendue")
+    # 0044 : la R1 du dimanche 12-20 serait reportée au lundi 12-21, mais CLI-0025 reçoit une
+    # relance de rattrapage (0072) le 12-15 : espacement 5 x 1,5 = 7,5 -> 8 jours (total entre
+    # 100 000 et 500 000 FCFA), donc rien le 12-21 et un message groupé le 12-23 (extension IA 3.1).
+    if trouve("2026-12-21", client_id="CLI-0025", decision="PREPAREE"):
+        m.append("0044 : aucune relance attendue le 12-21 (espacement de 8 jours après le 12-15)")
+    if not trouve("2026-12-23", client_id="CLI-0025", etape="GROUPE", decision="PREPAREE"):
+        m.append("0044 : message groupé de CLI-0025 attendu le 12-23")
     if [r for r in rel if r["date_simulee"] in ("2026-12-20", "2026-12-25")]:
         m.append("aucune décision attendue un dimanche ou un jour férié")
-    if len(trouve("2026-12-15", decision="EN_ATTENTE_VALIDATION", motif="GROS_MONTANT")) != 4:
-        m.append("4 relances de gros montant attendues le 12-15")
+    # CLI-0019 (total 600 000 FCFA, dernier envoi le 12-12) exige 4 jours : différé, donc 3 le 12-15
+    if len(trouve("2026-12-15", decision="EN_ATTENTE_VALIDATION", motif="GROS_MONTANT")) != 3:
+        m.append("3 relances de gros montant attendues le 12-15")
+    if trouve("2026-12-15", client_id="CLI-0019", decision="EN_ATTENTE_VALIDATION"):
+        m.append("CLI-0019 doit être différé par l'espacement le 12-15")
     return m
 
 

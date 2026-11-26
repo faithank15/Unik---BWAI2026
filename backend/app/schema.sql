@@ -54,7 +54,11 @@ CREATE TABLE preferences_contact (
   canal_prefere        TEXT NOT NULL CHECK (canal_prefere IN ('WHATSAPP','EMAIL')),
   canaux_autorises     TEXT NOT NULL,            -- 'WHATSAPP;EMAIL'
   consentement_relance INTEGER NOT NULL CHECK (consentement_relance IN (0,1)),
-  interlocuteur        TEXT
+  interlocuteur        TEXT,
+  jours_a_eviter       TEXT NOT NULL DEFAULT '',     -- 'MARDI;VENDREDI' (lundi à samedi)
+  plage_horaire        TEXT NOT NULL DEFAULT 'AUCUNE'
+                       CHECK (plage_horaire IN ('MATIN','APRES_MIDI','AUCUNE')),
+  provenance           TEXT NOT NULL DEFAULT '{}'    -- JSON : champ -> {source, date}
 );
 
 CREATE TABLE imports (
@@ -236,7 +240,8 @@ CREATE TABLE envois_simules (
   destinataire TEXT NOT NULL,
   objet       TEXT,
   contenu     TEXT NOT NULL,
-  horodatage  TEXT NOT NULL
+  horodatage  TEXT NOT NULL,
+  plage_horaire TEXT                                 -- préférence du client au moment de l'envoi
 );
 
 CREATE TABLE file_revue (

@@ -14,9 +14,9 @@
     "POST /api/relances/envoyer (reprise)"
   ],
   "attendu": {
-    "relances_a_envoyer": 14,
+    "relances_a_envoyer": 13,
     "apres_interruption": 5,
-    "apres_reprise": 14,
+    "apres_reprise": 13,
     "doublons": 0,
     "relances": [
       {
@@ -209,20 +209,6 @@
         "lignes": [
           [
             "ECH-0119",
-            "R1"
-          ]
-        ]
-      },
-      {
-        "client": "CLI-0030",
-        "canal": "EMAIL",
-        "etape": "R1",
-        "ton": "R1",
-        "decision": "PREPAREE",
-        "total": 200000,
-        "lignes": [
-          [
-            "ECH-0123",
             "R1"
           ]
         ]

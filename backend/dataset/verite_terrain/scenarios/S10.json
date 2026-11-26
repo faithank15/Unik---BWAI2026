@@ -63,16 +63,6 @@
         "ECH-0110"
       ]
     },
-    "apres_cloture_CTE_0002": [
-      {
-        "date": "2026-12-15",
-        "client": "CLI-0014",
-        "canal": "EMAIL",
-        "etape": "R2",
-        "echeances": "ECH-0108:R2",
-        "decision": "PREPAREE",
-        "motif": ""
-      }
-    ]
+    "apres_cloture_CTE_0002": []
   }
 }

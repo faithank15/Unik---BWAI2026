@@ -1,4 +1,5 @@
 """Clients, factures, échéances et priorisation (lecture) ; préférences de contact."""
+import json
 import sqlite3
 
 from fastapi import APIRouter, Depends, Query
@@ -93,7 +94,10 @@ def detail_client(client_id: str, _: Utilisateur = Depends(authentifie),
             "canal_prefere": p["canal_prefere"],
             "canaux_autorises": p["canaux_autorises"].split(";"),
             "consentement_relance": bool(p["consentement_relance"]),
-            "interlocuteur": p["interlocuteur"]},
+            "interlocuteur": p["interlocuteur"],
+            "jours_a_eviter": [j for j in p["jours_a_eviter"].split(";") if j],
+            "plage_horaire": p["plage_horaire"],
+            "provenance": json.loads(p["provenance"])},
         "encours": encours,
         "factures": [{k: f[k] for k in ("id", "numero", "montant_ttc", "statut", "solde",
                                         "retard_jours")} for f in factures],
@@ -105,7 +109,9 @@ class PreferencesEntree(BaseModel):
     canal_prefere: str | None = Field(None, pattern="^(WHATSAPP|EMAIL)$")
     canaux_autorises: list[str] | None = None
     consentement_relance: bool | None = None
-    interlocuteur: str | None = Field(None, max_length=120)
+    interlocuteur: str | None = Field(None, max_length=80)
+    jours_a_eviter: list[str] | None = None
+    plage_horaire: str | None = Field(None, pattern="^(MATIN|APRES_MIDI|AUCUNE)$")
     email: str | None = Field(None, max_length=200)
     whatsapp: str | None = Field(None, max_length=30)
 
@@ -137,8 +143,15 @@ def modifier_preferences(client_id: str, corps: PreferencesEntree,
             p["canaux_autorises"] if p else None)
         cons = (int(corps.consentement_relance) if corps.consentement_relance is not None
                 else (p["consentement_relance"] if p else None))
-        inter = corps.interlocuteur if corps.interlocuteur is not None else (
-            p["interlocuteur"] if p else None)
+        inter = dom.nettoyer_interlocuteur(corps.interlocuteur) \
+            if corps.interlocuteur is not None else (p["interlocuteur"] if p else None)
+        jours = p["jours_a_eviter"] if p else ""
+        if corps.jours_a_eviter is not None:
+            jours = dom.lire_jours_a_eviter(";".join(corps.jours_a_eviter))
+            if jours is None:
+                raise Validation("jours_a_eviter : lundi à samedi uniquement (le dimanche est "
+                                 "déjà exclu).")
+        plage = corps.plage_horaire or (p["plage_horaire"] if p else "AUCUNE")
         if canal is None or aut is None or cons is None:
             raise Validation("Un client sans préférences exige canal_prefere, "
                              "canaux_autorises et consentement_relance.")
@@ -146,15 +159,29 @@ def modifier_preferences(client_id: str, corps: PreferencesEntree,
             raise Validation("Le canal préféré doit faire partie des canaux autorisés.")
         conn.execute("UPDATE clients SET email = ?, whatsapp = ? WHERE id = ?",
                      (email, whatsapp, client_id))
+        # Provenance : chaque valeur modifiée ici est désormais celle du gestionnaire
+        prov = json.loads(p["provenance"]) if p else {}
+        nouvelles = {"canal_prefere": canal, "jours_a_eviter": jours, "plage_horaire": plage,
+                     "interlocuteur": inter}
+        for champ, valeur in nouvelles.items():
+            if p is None or p[champ] != valeur or champ not in prov:
+                prov[champ] = {"source": "GESTIONNAIRE",
+                               "date": clock.date_reference(conn).isoformat()}
         conn.execute("INSERT INTO preferences_contact(client_id, canal_prefere, "
-                     "canaux_autorises, consentement_relance, interlocuteur) VALUES (?,?,?,?,?) "
+                     "canaux_autorises, consentement_relance, interlocuteur, jours_a_eviter, "
+                     "plage_horaire, provenance) VALUES (?,?,?,?,?,?,?,?) "
                      "ON CONFLICT(client_id) DO UPDATE SET canal_prefere = excluded.canal_prefere, "
                      "canaux_autorises = excluded.canaux_autorises, consentement_relance = "
-                     "excluded.consentement_relance, interlocuteur = excluded.interlocuteur",
-                     (client_id, canal, aut, cons, inter))
+                     "excluded.consentement_relance, interlocuteur = excluded.interlocuteur, "
+                     "jours_a_eviter = excluded.jours_a_eviter, plage_horaire = "
+                     "excluded.plage_horaire, provenance = excluded.provenance",
+                     (client_id, canal, aut, cons, inter, jours, plage,
+                      json.dumps(prov, sort_keys=True)))
         journaliser(conn, "PREFERENCES_MODIFIEES", "CLIENT", client_id, avant=avant,
                     apres={"canal_prefere": canal, "canaux_autorises": aut,
-                           "consentement_relance": cons, "email": email, "whatsapp": whatsapp},
+                           "consentement_relance": cons, "interlocuteur": inter,
+                           "jours_a_eviter": jours, "plage_horaire": plage,
+                           "email": email, "whatsapp": whatsapp},
                     acteur=utilisateur(u.id))
         valide = bool(cons) and any(
             (x == "EMAIL" and email) or (x == "WHATSAPP" and whatsapp) for x in aut.split(";"))
@@ -165,7 +192,8 @@ def modifier_preferences(client_id: str, corps: PreferencesEntree,
                                             "PREFERENCES_MISES_A_JOUR", utilisateur(u.id))
     return {"client_id": client_id, "canal_prefere": canal, "canaux_autorises": aut.split(";"),
             "consentement_relance": bool(cons), "interlocuteur": inter,
-            "revues_resolues": resolues}
+            "jours_a_eviter": [j for j in jours.split(";") if j], "plage_horaire": plage,
+            "provenance": prov, "revues_resolues": resolues}
 
 
 @routeur.get("/factures", summary="Liste calculée des factures")

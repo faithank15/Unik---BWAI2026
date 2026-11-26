@@ -30,15 +30,6 @@
         "echeances": "ECH-0119:R1",
         "decision": "PREPAREE",
         "motif": ""
-      },
-      {
-        "date": "2026-12-15",
-        "client": "CLI-0030",
-        "canal": "EMAIL",
-        "etape": "R1",
-        "echeances": "ECH-0123:R1",
-        "decision": "PREPAREE",
-        "motif": ""
       }
     ]
   }

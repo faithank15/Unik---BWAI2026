@@ -102,7 +102,7 @@
       "suspendue_le_16": false,
       "premiere_decision_apres_suspension": [
         {
-          "date": "2026-12-21",
+          "date": "2026-12-26",
           "client": "CLI-0006",
           "canal": "EMAIL",
           "etape": "GROUPE",

@@ -8,7 +8,7 @@ from collections.abc import Collection, Mapping
 from dataclasses import dataclass
 from datetime import date, timedelta
 
-from app.domain.calendrier import prochain_jour_ouvre
+from app.domain.calendrier import prochain_jour_permis
 
 ORDRE = ("P", "R1", "R2", "R3")
 GRAVITE = {"R1": 1, "P": 2, "R2": 3, "R3": 4}   # R3 > R2 > P > R1
@@ -21,6 +21,9 @@ class ParamsRelances:
     espacement_normal: int = 2
     espacement_rattrapage: int = 5
     seuil_gros_montant: int = 500_000
+    seuil_espacement_moyen: int = 100_000
+    coef_espacement_moyen: int = 15      # en dixièmes : 15 = × 1,5
+    coef_espacement_gros: int = 20       # en dixièmes : 20 = × 2
     delai_escalade: int = 5
     marge_promesse: int = 2
 
@@ -52,13 +55,15 @@ def date_brute(date_echeance: date, etape: str, p: ParamsRelances) -> date:
 
 
 def date_effective(date_echeance: date, etape: str, p: ParamsRelances,
-                   feries: Collection[date]) -> date:
-    return prochain_jour_ouvre(date_brute(date_echeance, etape, p), feries)
+                   feries: Collection[date], evites: Collection[int] = ()) -> date:
+    """Date brute reportée au prochain jour ouvré et non évité par le client."""
+    return prochain_jour_permis(date_brute(date_echeance, etape, p), feries, evites)
 
 
 def etape_a_preparer(date_echeance: date, traitees: Mapping[str, EtapeTraitee], ref: date,
                      feries: Collection[date], p: ParamsRelances,
-                     p_applicable: bool = True) -> ResultatEtape:
+                     p_applicable: bool = True,
+                     evites: Collection[int] = ()) -> ResultatEtape:
     """Étape candidate d'une échéance à la date `ref` (section 7.2).
 
     L'étape candidate est la première étape non traitée, dans l'ordre P, R1, R2, R3, dont la date
@@ -73,14 +78,14 @@ def etape_a_preparer(date_echeance: date, traitees: Mapping[str, EtapeTraitee], 
             continue
         if etape in traitees:
             continue
-        eff = date_effective(date_echeance, etape, p, feries)
+        eff = date_effective(date_echeance, etape, p, feries, evites)
         if etape == "P" and eff < ref:
             sautees.append(("P", "P_APRES_ECHEANCE" if date_echeance < ref else "P_TROP_PROCHE"))
             continue
         if eff <= ref:
             return ResultatEtape(Candidate(etape, eff, date_brute(date_echeance, etape, p),
                                            en_rattrapage(date_echeance, etape, eff, ref,
-                                                          traitees, p, feries)),
+                                                          traitees, p, feries, evites)),
                                  tuple(sautees))
         break
     return ResultatEtape(None, tuple(sautees))
@@ -88,7 +93,7 @@ def etape_a_preparer(date_echeance: date, traitees: Mapping[str, EtapeTraitee], 
 
 def en_rattrapage(date_echeance: date, etape: str, eff: date, ref: date,
                    traitees: Mapping[str, EtapeTraitee], p: ParamsRelances,
-                   feries: Collection[date]) -> bool:
+                   feries: Collection[date], evites: Collection[int] = ()) -> bool:
     """Rattrapage : date effective antérieure à `ref`, ou étape précédente de la même échéance
     envoyée après sa propre date effective."""
     if eff < ref:
@@ -99,7 +104,7 @@ def en_rattrapage(date_echeance: date, etape: str, eff: date, ref: date,
         return False
     prec = precedentes[-1]
     envoi = traitees[prec].date_envoi
-    return envoi is not None and envoi > date_effective(date_echeance, prec, p, feries)
+    return envoi is not None and envoi > date_effective(date_echeance, prec, p, feries, evites)
 
 
 def ton(etapes: Collection[str]) -> str:
@@ -121,8 +126,22 @@ def lignes_absorbees(etapes_par_echeance: Mapping[str, str]) -> set[str]:
     return {e for e, s in etapes_par_echeance.items() if GRAVITE[s] < GRAVITE[t]}
 
 
-def ecart_minimal(au_moins_un_rattrapage: bool, p: ParamsRelances) -> int:
-    return p.espacement_rattrapage if au_moins_un_rattrapage else p.espacement_normal
+def coefficient_espacement(total: int, p: ParamsRelances) -> int:
+    """Coefficient (en dixièmes) selon le montant total du message : × 1 jusqu'au seuil moyen,
+    × 1,5 jusqu'au seuil de gros montant inclus, × 2 au-delà (extension IA, section 3.1)."""
+    if total > p.seuil_gros_montant:
+        return p.coef_espacement_gros
+    if total > p.seuil_espacement_moyen:
+        return p.coef_espacement_moyen
+    return 10
+
+
+def ecart_minimal(au_moins_un_rattrapage: bool, p: ParamsRelances, total: int = 0) -> int:
+    """Espacement effectif en jours : espacement standard (normal ou rattrapage) multiplié par
+    le coefficient du montant, arrondi au jour entier supérieur. Le délai d'escalade après R3
+    ne varie pas."""
+    base = p.espacement_rattrapage if au_moins_un_rattrapage else p.espacement_normal
+    return -(-base * coefficient_espacement(total, p) // 10)
 
 
 def espacement_respecte(ref: date, dernier_envoi: date | None, ecart: int) -> bool:

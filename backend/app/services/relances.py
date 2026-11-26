@@ -15,7 +15,7 @@ from app import clock
 from app.db import prochain_id, transaction
 from app.domain import canevas
 from app.domain import relances as dom
-from app.domain.calendrier import est_jour_ouvre
+from app.domain.calendrier import est_jour_ouvre, indices_jours_evites
 from app.errors import Introuvable
 from app.journal import Acteur, journaliser
 from app.parametres import lire_booleen, lire_entier, lire_texte
@@ -32,6 +32,9 @@ def charger_params(conn: sqlite3.Connection) -> dom.ParamsRelances:
         espacement_normal=lire_entier(conn, "espacement_normal_jours"),
         espacement_rattrapage=lire_entier(conn, "espacement_rattrapage_jours"),
         seuil_gros_montant=lire_entier(conn, "seuil_gros_montant"),
+        seuil_espacement_moyen=lire_entier(conn, "seuil_espacement_moyen"),
+        coef_espacement_moyen=lire_entier(conn, "coef_espacement_moyen_dixiemes"),
+        coef_espacement_gros=lire_entier(conn, "coef_espacement_gros_dixiemes"),
         delai_escalade=lire_entier(conn, "delai_escalade_jours"),
         marge_promesse=lire_entier(conn, "marge_promesse_jours"))
 
@@ -104,8 +107,14 @@ def _candidats(conn: sqlite3.Connection) -> list[sqlite3.Row]:
 def _clients(conn: sqlite3.Connection) -> dict[str, sqlite3.Row]:
     return {r["id"]: r for r in conn.execute(
         "SELECT c.id, c.email, c.whatsapp, p.canal_prefere, p.canaux_autorises, "
-        "p.consentement_relance, p.interlocuteur FROM clients c "
+        "p.consentement_relance, p.interlocuteur, p.jours_a_eviter, p.plage_horaire "
+        "FROM clients c "
         "LEFT JOIN preferences_contact p ON p.client_id = c.id")}
+
+
+def jours_evites(c: sqlite3.Row) -> frozenset[int]:
+    """Jours de la semaine à éviter pour ce client (aucun s'il n'a pas de préférences)."""
+    return indices_jours_evites(c["jours_a_eviter"])
 
 
 def canal_du_client(c: sqlite3.Row) -> tuple[str | None, str | None]:
@@ -194,9 +203,10 @@ def planifier(conn: sqlite3.Connection, acteur: Acteur) -> dict:
             c = clients[e["client_id"]]
             canal, motif_revue = canal_du_client(c)
             steps = traitees[e["echeance_id"]]
+            evites = jours_evites(c)
             res = dom.etape_a_preparer(
                 date.fromisoformat(e["date_echeance"]), steps, ref, feries, p,
-                p_applicable=e["facture_id"] not in ctx.accords_acceptes)
+                p_applicable=e["facture_id"] not in ctx.accords_acceptes, evites=evites)
             if canal is None:
                 if res.candidate:
                     ouvrir_revue(conn, motif_revue, "CLIENT", e["client_id"], e["client_id"],
@@ -206,6 +216,8 @@ def planifier(conn: sqlite3.Connection, acteur: Acteur) -> dict:
                 _creer_sautee(conn, e, canal, etape, motif_saut, ref, trt, acteur)
                 steps[etape] = dom.EtapeTraitee("SAUTEE")
                 resume["sautees"] += 1
+            if res.candidate and ref.weekday() in evites:
+                continue    # jour à éviter pour ce client : reporté au prochain jour permis
             if res.candidate:
                 groupes[(e["client_id"], canal)].append({"e": e, "cand": res.candidate})
         envois: dict[tuple[str, str], date | None] = {}
@@ -215,14 +227,16 @@ def planifier(conn: sqlite3.Connection, acteur: Acteur) -> dict:
                             (client, canal)).fetchone():
                 continue  # une relance est déjà en cours pour ce client et ce canal
             dernier = envois.setdefault((client, canal), _dernier_envoi(conn, client, canal))
-            ecart = dom.ecart_minimal(any(x["cand"].rattrapage for x in lignes), p)
+            total = sum(x["e"]["solde"] for x in lignes)
+            ecart = dom.ecart_minimal(any(x["cand"].rattrapage for x in lignes), p, total)
             if not dom.espacement_respecte(ref, dernier, ecart):
                 resume["reportees_espacement"] += 1
                 journaliser(conn, "RELANCE_REPORTEE_ESPACEMENT", "CLIENT", client, acteur=acteur,
                             details={"canal": canal, "dernier_envoi": dernier.isoformat(),
-                                     "ecart_minimal": ecart})
+                                     "ecart_minimal": ecart, "total": total,
+                                     "prochaine_date_possible":
+                                         (dernier + _jours(ecart)).isoformat()})
                 continue
-            total = sum(x["e"]["solde"] for x in lignes)
             etapes = [x["cand"].etape for x in lignes]
             motif = dom.motif_de_planification(
                 total, len(lignes), any(x["cand"].date_effective == ref
@@ -387,6 +401,11 @@ def traiter_relance(conn: sqlite3.Connection, relance_id: str, acteur: Acteur) -
     ctx = charger_contexte(conn)
     if not est_jour_ouvre(ctx.ref, ctx.feries):
         return {"id": relance_id, "resultat": "REPORTEE", "statut": r["statut"]}
+    prefs = conn.execute("SELECT jours_a_eviter, plage_horaire FROM preferences_contact "
+                         "WHERE client_id = ?", (r["client_id"],)).fetchone()
+    evites = indices_jours_evites(prefs["jours_a_eviter"] if prefs else None)
+    if ctx.ref.weekday() in evites:
+        return {"id": relance_id, "resultat": "REPORTEE", "statut": r["statut"]}
     motif = _reverifier(conn, ctx, r, acteur)
     if motif:
         return {"id": relance_id, "resultat": "ANNULEE", "statut": "ANNULEE", "motif": motif}
@@ -399,12 +418,15 @@ def traiter_relance(conn: sqlite3.Connection, relance_id: str, acteur: Acteur) -
         e = conn.execute("SELECT date_echeance FROM echeances WHERE id = ?",
                          (l_["echeance_id"],)).fetchone()
         d_ech = date.fromisoformat(e[0])
-        eff = dom.date_effective(d_ech, l_["etape_echeance"], ctx.p, ctx.feries)
+        eff = dom.date_effective(d_ech, l_["etape_echeance"], ctx.p, ctx.feries, evites)
         prevue = date.fromisoformat(r["date_prevue"])
         rattrapage |= dom.en_rattrapage(d_ech, l_["etape_echeance"], eff, prevue,
-                                        traitees.get(l_["echeance_id"], {}), ctx.p, ctx.feries)
+                                        traitees.get(l_["echeance_id"], {}), ctx.p, ctx.feries,
+                                        evites)
     dernier = _dernier_envoi(conn, r["client_id"], r["canal"], exclure=relance_id)
-    if not dom.espacement_respecte(ctx.ref, dernier, dom.ecart_minimal(rattrapage, ctx.p)):
+    total_courant = sum(x["solde"] for x in _soldes_courants(conn, relance_id))
+    if not dom.espacement_respecte(
+            ctx.ref, dernier, dom.ecart_minimal(rattrapage, ctx.p, total_courant)):
         _annuler(conn, r, "ESPACEMENT_NON_RESPECTE", acteur)
         return {"id": relance_id, "resultat": "ANNULEE", "statut": "ANNULEE",
                 "motif": "ESPACEMENT_NON_RESPECTE"}
@@ -425,10 +447,11 @@ def traiter_relance(conn: sqlite3.Connection, relance_id: str, acteur: Acteur) -
     client = conn.execute("SELECT email, whatsapp FROM clients WHERE id = ?",
                           (r["client_id"],)).fetchone()
     destinataire = client["email"] if r["canal"] == "EMAIL" else client["whatsapp"]
+    plage = prefs["plage_horaire"] if prefs and prefs["plage_horaire"] != "AUCUNE" else None
     conn.execute("INSERT INTO envois_simules(id, relance_id, canal, destinataire, objet, "
-                 "contenu, horodatage) VALUES (?,?,?,?,?,?,?)",
+                 "contenu, horodatage, plage_horaire) VALUES (?,?,?,?,?,?,?,?)",
                  (prochain_id(conn, "ENV"), relance_id, r["canal"], destinataire, objet,
-                  contenu, clock.maintenant()))
+                  contenu, clock.maintenant(), plage))
     conn.execute("UPDATE relances SET statut = 'ENVOYEE_SIM', date_envoi = ?, contenu = ? "
                  "WHERE id = ?", (ctx.ref.isoformat(), contenu, relance_id))
     for x in soldes:
@@ -647,7 +670,7 @@ def boite_envoi(conn: sqlite3.Connection, canal: str | None = None,
     where = (" WHERE " + " AND ".join(cond)) if cond else ""
     return [dict(x) for x in conn.execute(
         "SELECT e.id, e.relance_id, r.client_id, e.canal, e.destinataire, e.objet, e.contenu, "
-        "e.horodatage, r.date_envoi FROM envois_simules e JOIN relances r ON r.id = "
-        "e.relance_id" + where + " ORDER BY e.id", args)]
+        "e.horodatage, e.plage_horaire, r.date_envoi FROM envois_simules e "
+        "JOIN relances r ON r.id = e.relance_id" + where + " ORDER BY e.id", args)]
 
 

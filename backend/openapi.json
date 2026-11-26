@@ -479,7 +479,7 @@
           "interlocuteur": {
             "anyOf": [
               {
-                "maxLength": 120,
+                "maxLength": 80,
                 "type": "string"
               },
               {
@@ -487,6 +487,32 @@
               }
             ],
             "title": "Interlocuteur"
+          },
+          "jours_a_eviter": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jours A Eviter"
+          },
+          "plage_horaire": {
+            "anyOf": [
+              {
+                "pattern": "^(MATIN|APRES_MIDI|AUCUNE)$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plage Horaire"
           },
           "whatsapp": {
             "anyOf": [
