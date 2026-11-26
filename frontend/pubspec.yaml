@@ -1,0 +1,48 @@
+name: faktu
+description: "Faktu : le recouvrement des factures impayées (BWAI 2026, cas 1). L'interface mobile."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  go_router: ^18.1.1
+  flutter_svg: ^2.3.0
+  http: ^1.6.0
+  shared_preferences: ^2.5.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  shaders:
+    - shaders/verre_liquide.frag
+
+  assets:
+    - assets/icones/
+    - assets/logo/
+
+  # Wura Mi by Gemma S (licence OFL, assets/polices/OFL-WuraMi.txt). Le Medium (500) est
+  # interpole entre le Regular et le SemiBold : le texte courant, plein comme Outfit.
+  fonts:
+    - family: WuraMi
+      fonts:
+        - asset: assets/polices/WuraMi-Light.ttf
+          weight: 300
+        - asset: assets/polices/WuraMi.ttf
+          weight: 400
+        - asset: assets/polices/WuraMi-Medium.ttf
+          weight: 500
+        - asset: assets/polices/WuraMi-SemiBold.ttf
+          weight: 600
+        - asset: assets/polices/WuraMi-Bold.ttf
+          weight: 700
