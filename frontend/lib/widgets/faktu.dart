@@ -361,6 +361,8 @@ class GroupeLignes extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Plaque(
     child: Column(
+      // Etiree : une ligne plus courte que les autres ne se centre pas.
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (var i = 0; i < lignes.length; i++) ...[if (i > 0) Divider(height: 1, thickness: 0.7, indent: retrait, color: Couleurs.filet), lignes[i]],
       ],
@@ -453,26 +455,34 @@ class LigneInfo extends StatelessWidget {
   final bool fort;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 5),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 150),
-          child: Text(cle, style: Textes.discret.copyWith(fontSize: 14.5)),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Text(
-            valeur,
-            textAlign: TextAlign.end,
-            style: TextStyle(fontSize: 14.5, fontWeight: fort ? FontWeight.w700 : FontWeight.w600, color: couleur ?? Couleurs.texte),
-          ),
-        ),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final style = TextStyle(fontSize: 14.5, fontWeight: fort ? FontWeight.w700 : FontWeight.w600, color: couleur ?? Couleurs.texte);
+    // Une valeur courte (un nombre, une date) laisse toute la place au libelle ;
+    // une longue partage la ligne.
+    final courte = valeur.length <= 18;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (courte)
+            Expanded(child: Text(cle, style: Textes.discret.copyWith(fontSize: 14.5)))
+          else
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 150),
+              child: Text(cle, style: Textes.discret.copyWith(fontSize: 14.5)),
+            ),
+          const SizedBox(width: 16),
+          if (courte)
+            Text(valeur, style: style)
+          else
+            Expanded(
+              child: Text(valeur, textAlign: TextAlign.end, style: style),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Ouvre une page de detail dans l onglet courant (le retour y ramene) : ouvrir(context,

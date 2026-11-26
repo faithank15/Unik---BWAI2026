@@ -55,7 +55,7 @@ class _EcranJournalState extends State<EcranJournal> {
     final liste = _liste?.where((e) => _acteur == null || e.acteur == _acteur).toList();
     return PageFaktu(
       titre: widget.correlationId != null ? t('Une décision') : t('Journal'),
-      sousTitre: widget.objetId ?? (widget.correlationId != null ? t('Tous les événements liés') : t('Ajout seulement : rien ne s’y efface')),
+      sousTitre: widget.objetId ?? (widget.correlationId != null ? t('Tous les événements liés') : t('Les entrées ne peuvent être ni modifiées ni supprimées')),
       retour: true,
       rafraichir: false,
       enfants: [
@@ -74,7 +74,7 @@ class _EcranJournalState extends State<EcranJournal> {
         else if (liste == null)
           const Attente()
         else if (liste.isEmpty)
-          EtatVide(icone: 'journal', titre: t('Aucun événement'))
+          EtatVide(icone: 'journal', titre: t('Aucune entrée dans le journal'))
         else
           GroupeLignes(
             retrait: 52,
@@ -92,6 +92,68 @@ class _EcranJournalState extends State<EcranJournal> {
 }
 
 /// Un champ du journal (texte JSON ou objet) en « cle : valeur », lisible.
+// Les cles des details du journal, dites en clair. Une cle absente : lisible().
+const _cles = {
+  'facture_id': 'Facture',
+  'facture_citee_id': 'Facture citée',
+  'client_id': 'Client',
+  'echeance_id': 'Échéance',
+  'paiement_id': 'Paiement',
+  'promesse_id': 'Promesse',
+  'effet': 'Effet',
+  'contestation_id': 'Contestation',
+  'accord_id': 'Échéancier',
+  'relance_id': 'Relance',
+  'message_id': 'Réponse',
+  'date_promise': 'Date promise',
+  'date_paiement': 'Date du paiement',
+  'date_prevue': 'Prévue le',
+  'date_envoi': 'Envoyée le',
+  'montant': 'Montant',
+  'montant_promis': 'Montant promis',
+  'montant_affecte': 'Montant affecté',
+  'non_affecte': 'Reste à affecter',
+  'solde': 'Solde',
+  'categorie': 'Catégorie',
+  'categorie_ia': 'Catégorie proposée par l’IA',
+  'categorie_validee': 'Catégorie retenue',
+  'statut': 'Statut',
+  'statut_traitement': 'Statut',
+  'origine': 'Origine',
+  'motif': 'Motif',
+  'decision': 'Décision',
+  'commentaire': 'Commentaire',
+  'canal': 'Canal',
+  'etape': 'Étape',
+  'confiance': 'Confiance',
+  'resolution': 'Décision',
+};
+
+final _dateIso = RegExp(r'^\d{4}-\d{2}-\d{2}');
+final _code = RegExp(r'^[A-Z][A-Z0-9_]+$');
+
+/// Une valeur du journal en clair : une date, un montant, un code, ou tel quel.
+String _valeur(String cle, Object? v) {
+  if (v is List) return v.map((x) => _valeur(cle, x)).join(', ');
+  if (v is Map) return _lisible(v);
+  if (v is num && (cle.contains('montant') || cle.contains('solde') || cle.contains('affecte') || cle.contains('total'))) return fcfa(v.round());
+  if (v is num && cle == 'confiance') return confiance(v.toDouble());
+  final texte = '$v';
+  if (_dateIso.hasMatch(texte)) {
+    final d = DateTime.tryParse(texte);
+    if (d != null) return texte.length > 10 ? horodatage(d.toLocal()) : dateCourte(d);
+  }
+  if (_code.hasMatch(texte)) {
+    if (cle.contains('categorie')) return categorie(texte);
+    if (cle == 'statut_traitement' || const {'A_CLASSER', 'CLASSE', 'EN_REVUE', 'TRAITE'}.contains(texte)) return statutMessage(texte);
+    if (cle == 'canal') return canal(texte);
+    if (cle == 'etape') return etape(texte);
+    if (cle == 'motif') return motif(texte);
+    return lisible(texte);
+  }
+  return texte;
+}
+
 String _lisible(Object? v) {
   if (v == null) return '';
   Object? o = v;
@@ -104,8 +166,8 @@ String _lisible(Object? v) {
   }
   if (o is Map) {
     return o.entries
-        .where((e) => e.value != null)
-        .map((e) => '${lisible('${e.key}')} : ${e.value is List ? (e.value as List).join(', ') : e.value}')
+        .where((e) => e.value != null && '${e.value}'.isNotEmpty)
+        .map((e) => '${t(_cles['${e.key}'] ?? lisible('${e.key}'))} : ${_valeur('${e.key}', e.value)}')
         .join(' · ');
   }
   return '$o';
@@ -151,7 +213,7 @@ class _LigneEvenement extends StatelessWidget {
                 if (avant.isNotEmpty || apres.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
-                    '${avant.isEmpty ? t('rien') : avant}  →  ${apres.isEmpty ? t('rien') : apres}',
+                    avant.isEmpty ? apres : (apres.isEmpty ? t('{a} (retiré)', {'a': avant}) : '$avant  →  $apres'),
                     style: Textes.petit.copyWith(color: Couleurs.texte, fontWeight: FontWeight.w600),
                   ),
                 ],

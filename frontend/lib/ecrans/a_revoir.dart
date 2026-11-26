@@ -55,19 +55,28 @@ class _EcranARevoirState extends State<EcranARevoir> {
           else if (d.tableau == null)
             const Attente()
           else if (total == 0)
-            EtatVide(icone: 'coche', titre: t('Rien à revoir'), texte: t('Les dossiers qui demandent une décision arriveront ici.'))
+            EtatVide(
+              icone: 'coche',
+              titre: t('Aucun dossier à revoir'),
+              texte: t('Les paiements à affecter, les réponses incertaines et les relances de gros montant s’afficheront ici.'),
+            )
           else ...[
             if (d.messagesAClasser.isNotEmpty) ...[
               TitreSection(accorder(d.messagesAClasser.length, '{n} réponse à classer', '{n} réponses à classer')),
               Padding(
                 padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
-                child: Text(t('L’IA n’a pas pu les classer. Leurs relances sont suspendues en attendant.'), style: Textes.petit),
+                child: Text(
+                  d.messagesAClasser.length == 1
+                      ? t('L’IA n’a pas pu la classer. Les relances du client sont suspendues en attendant.')
+                      : t('L’IA n’a pas pu les classer. Les relances de ces clients sont suspendues en attendant.'),
+                  style: Textes.petit,
+                ),
               ),
               for (final m in d.messagesAClasser) ...[_CarteAClasser(m), const SizedBox(height: 12)],
               const SizedBox(height: 10),
             ],
             if (d.revue.isNotEmpty) ...[
-              if (d.messagesAClasser.isNotEmpty) TitreSection(t('File de revue')),
+              if (d.messagesAClasser.isNotEmpty) TitreSection(t('Dossiers à revoir')),
               if (types.length > 1) ...[
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -113,27 +122,20 @@ class _CarteAClasser extends StatelessWidget {
         const SizedBox(height: 8),
         CarteMessage(m),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: BoutonVerre(
-                texte: t('Relancer l’IA'),
-                icone: 'etincelle',
-                onTap: () async {
-                  try {
-                    await Donnees.instance.reclasser(m.id);
-                    if (context.mounted) bulle(context, t('Classement demandé. Le résultat arrivera dans un instant.'), icone: 'etincelle');
-                  } on ApiErreur catch (e) {
-                    if (context.mounted) bulle(context, e.message, icone: 'alerte');
-                  }
-                },
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: BoutonVerre(texte: t('Classer'), plein: true, onTap: () => classerMessage(context, m)),
-            ),
-          ],
+        BoutonVerre(texte: t('Classer cette réponse'), plein: true, onTap: () => classerMessage(context, m)),
+        const SizedBox(height: 4),
+        Center(
+          child: Lien(
+            t('Demander à l’IA de la classer à nouveau'),
+            onTap: () async {
+              try {
+                await Donnees.instance.reclasser(m.id);
+                if (context.mounted) bulle(context, t('L’IA classe cette réponse. Le résultat s’affichera dans un instant.'), icone: 'etincelle');
+              } on ApiErreur catch (e) {
+                if (context.mounted) bulle(context, e.message, icone: 'alerte');
+              }
+            },
+          ),
         ),
       ],
     ),
@@ -284,36 +286,33 @@ class _CarteRevueState extends State<CarteRevue> {
 
   List<Widget> _actions(BuildContext context) {
     final d = Donnees.instance;
-    Widget deux(Widget a, Widget b) => Row(
-      children: [
-        Expanded(child: a),
-        const SizedBox(width: 10),
-        Expanded(child: b),
-      ],
-    );
-    final sansSuite = BoutonVerre(texte: t('Sans suite'), onTap: () => resoudre(context, r));
+    // Deux actions l une sous l autre, la principale en haut : les libelles restent entiers.
+    Widget deux(Widget secondaire, Widget principale) =>
+        Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [principale, const SizedBox(height: 8), secondaire]);
+    final sansSuite = BoutonVerre(texte: t('Classer sans suite'), onTap: () => resoudre(context, r));
     switch (r.type) {
       case 'GROS_MONTANT':
         return [
           deux(
             BoutonVerre(
               texte: t('Ne pas envoyer'),
+              teinte: TeinteVerre.rouge,
               onTap: () async {
                 if (await confirmer(
                   context,
                   titre: t('Ne pas envoyer cette relance ?'),
-                  texte: t('Elle sera rejetée et inscrite au journal.'),
-                  action: t('Rejeter'),
+                  texte: t('Le client ne la recevra pas. Ce choix est inscrit au journal.'),
+                  action: t('Ne pas envoyer'),
                   icone: 'fermer',
                 )) {
-                  await _essayer(() => d.rejeterRelance(r.objetId), t('Relance rejetée.'));
+                  await _essayer(() => d.rejeterRelance(r.objetId), t('Relance annulée : elle ne sera pas envoyée.'));
                 }
               },
             ),
             BoutonVerre(
-              texte: t('Envoyer'),
+              texte: t('Valider et envoyer'),
               plein: true,
-              onTap: () => _essayer(() => d.validerRelance(r.objetId), t('Relance validée, revérifiée puis envoyée.')),
+              onTap: () => _essayer(() => d.validerRelance(r.objetId), t('Relance validée et envoyée au client.')),
             ),
           ),
         ];
@@ -322,12 +321,14 @@ class _CarteRevueState extends State<CarteRevue> {
           deux(
             sansSuite,
             BoutonVerre(
-              texte: t('Clore'),
+              texte: t('Clore la contestation'),
               plein: true,
               onTap: () async {
                 final id = _message?.contestationId ?? await _contestationOuverte();
                 if (id == null) {
-                  if (context.mounted) bulle(context, t('Aucune contestation ouverte n’a été trouvée pour ce dossier.'), icone: 'alerte');
+                  if (context.mounted) {
+                    bulle(context, t('Impossible de trouver la contestation de ce dossier. Elle a peut-être déjà été close.'), icone: 'alerte');
+                  }
                   return;
                 }
                 if (context.mounted) await formulaireCloture(context, id);
@@ -336,12 +337,17 @@ class _CarteRevueState extends State<CarteRevue> {
           ),
         ];
       case 'PAIEMENT_AMBIGU':
-        return [deux(sansSuite, BoutonVerre(texte: t('Affecter'), plein: true, onTap: _paiement == null ? null : () => affecterPaiement(context, _paiement!)))];
+        return [
+          deux(
+            sansSuite,
+            BoutonVerre(texte: t('Affecter le paiement'), plein: true, onTap: _paiement == null ? null : () => affecterPaiement(context, _paiement!)),
+          ),
+        ];
       case 'CANAL_INVALIDE' || 'CONSENTEMENT_ABSENT':
         return [
           deux(
             BoutonVerre(
-              texte: t('C’est corrigé'),
+              texte: t('Marquer comme corrigé'),
               onTap: () => resoudre(context, r, decision: 'CONTACT_CORRIGE'),
             ),
             BoutonVerre(
@@ -360,7 +366,7 @@ class _CarteRevueState extends State<CarteRevue> {
         return [BoutonVerre(texte: t('Noter la décision'), plein: true, onTap: () => resoudre(context, r, escalade: true))];
       default:
         if (_message != null && !_message!.traite) {
-          return [deux(sansSuite, BoutonVerre(texte: t('Classer'), plein: true, onTap: () => classerMessage(context, _message!)))];
+          return [deux(sansSuite, BoutonVerre(texte: t('Classer cette réponse'), plein: true, onTap: () => classerMessage(context, _message!)))];
         }
         return [sansSuite];
     }
@@ -387,9 +393,9 @@ Future<void> classerMessage(BuildContext context, Message m) async {
   var enCours = false;
   final ok = await montrerFeuille<bool>(
     context,
-    titre: t('Que dit ce message ?'),
+    titre: t('Classer cette réponse'),
     contenu: (f) => StatefulBuilder(
-      builder: (f, maj) => Padding(
+      builder: (f, maj) => CorpsFeuille(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -420,7 +426,7 @@ Future<void> classerMessage(BuildContext context, Message m) async {
               ChampChoix(
                 icone: 'facture',
                 valeur: facture?.numero ?? m.factureCitee,
-                indice: t('Celle du message, ou la seule ouverte'),
+                indice: t('Celle citée dans le message, ou la seule facture ouverte'),
                 onTap: () async {
                   final x = await choisirFacture(f, m.clientId);
                   if (x != null) maj(() => facture = x);
@@ -432,7 +438,7 @@ Future<void> classerMessage(BuildContext context, Message m) async {
             ErreurFormulaire(erreur),
             const SizedBox(height: 16),
             BoutonVerre(
-              texte: t('Valider'),
+              texte: t('Enregistrer le classement'),
               plein: true,
               enCours: enCours,
               onTap: () async {
@@ -458,7 +464,7 @@ Future<void> classerMessage(BuildContext context, Message m) async {
       ),
     ),
   );
-  if (ok == true && context.mounted) bulle(context, t('Classement enregistré dans le journal.'), icone: 'coche');
+  if (ok == true && context.mounted) bulle(context, t('Réponse classée.'), icone: 'coche');
 }
 
 /// Affecter un paiement ambigu (POST /api/paiements/{id}/affecter) : le client s il manque, puis
@@ -488,7 +494,7 @@ Future<void> affecterPaiement(BuildContext context, Paiement p) async {
   var enCours = false;
   final ok = await montrerFeuille<bool>(
     context,
-    titre: t('Affecter {m}', {'m': fcfa(p.resteNonAffecte)}),
+    titre: t('Affecter {m} aux échéances', {'m': fcfa(p.resteNonAffecte)}),
     contenu: (f) => StatefulBuilder(
       builder: (f, maj) => ConstrainedBox(
         constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(f).height * 0.7),
@@ -521,12 +527,12 @@ Future<void> affecterPaiement(BuildContext context, Paiement p) async {
             ErreurFormulaire(erreur),
             const SizedBox(height: 12),
             BoutonVerre(
-              texte: t('Affecter'),
+              texte: t('Affecter le paiement'),
               plein: true,
               enCours: enCours,
               onTap: () async {
                 final parts = {for (final e in champs.entries) e.key: lireMontant(e.value.text) ?? 0};
-                if (parts.values.every((v) => v == 0)) return maj(() => erreur = t('Indiquez au moins un montant.'));
+                if (parts.values.every((v) => v == 0)) return maj(() => erreur = t('Saisissez un montant pour au moins une échéance.'));
                 maj(() => (enCours, erreur) = (true, null));
                 try {
                   await d.affecterPaiement(p.id, parts);
@@ -563,7 +569,7 @@ Future<void> resoudre(BuildContext context, ElementRevue r, {String? decision, b
     context,
     titre: escalade ? t('Décision sur l’escalade') : t('Clore le dossier'),
     contenu: (f) => StatefulBuilder(
-      builder: (f, maj) => Padding(
+      builder: (f, maj) => CorpsFeuille(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,

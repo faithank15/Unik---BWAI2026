@@ -40,6 +40,7 @@ Référence : le dépôt `Unik---BWAI2026`, dossier `backend/` (`openapi.json`, 
 1. **Les noms des clients dans les listes.** `factures`, `priorisation`, `relances`, `revue`, `canaux/envois` et `relances/suspensions` ne donnent que `client_id`. L'application charge les 30 clients une fois pour mettre un nom sur chaque ligne. Un champ `client_raison_sociale` dans ces listes éviterait ce chargement. Garder tel quel si vous préférez.
 2. **Les décisions d'une escalade.** `POST /api/revue/{id}/resoudre` accepte un texte libre. L'application propose `APPEL_CLIENT`, `MISE_EN_DEMEURE`, `ABANDON` et `SANS_SUITE`, plus un commentaire obligatoire. À confirmer ou à remplacer par votre liste.
 3. **Les revues « contact invalide » ou « sans accord ».** Après `PUT /api/clients/{id}/preferences`, l'application résout la revue avec la décision `CONTACT_CORRIGE`. Si le back-end la résout déjà seul à la modification du contact, on retire ce second appel.
+4. **Une IA qui propose, l'agent qui valide.** Aujourd'hui l'IA classe seulement les réponses ; le calendrier des relances et les messages sont fixes. Question posée dans la PR #1 : l'IA pourrait-elle proposer une formulation selon le cas (bon payeur, retards répétés, promesse non tenue) et avancer ou retarder une relance selon l'historique du client ? Les montants, dates et références resteraient insérés par le code ; l'agent accepterait, modifierait ou refuserait chaque proposition avant l'envoi.
 
 ## Lancer avec le back-end
 

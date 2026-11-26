@@ -22,7 +22,7 @@ import '../widgets/verre.dart';
 Future<void> ouvrirAjouter(BuildContext context) => montrerFeuille<void>(
   context,
   titre: t('Ajouter'),
-  contenu: (f) => Padding(
+  contenu: (f) => CorpsFeuille(
     padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
     child: Column(
       mainAxisSize: MainAxisSize.min,
@@ -45,10 +45,10 @@ Future<void> ouvrirAjouter(BuildContext context) => montrerFeuille<void>(
         ),
         LigneFeuille(
           icone: 'telecharger',
-          texte: t('Importer un lot de factures'),
+          texte: t('Importer un portefeuille'),
           onTap: () {
             Navigator.pop(f);
-            importer(context);
+            presenterImport(context);
           },
         ),
       ],
@@ -73,7 +73,7 @@ Future<bool> formulairePaiement(BuildContext context, {String? clientId, Facture
     context,
     titre: t('Enregistrer un paiement'),
     contenu: (f) => StatefulBuilder(
-      builder: (f, maj) => Padding(
+      builder: (f, maj) => CorpsFeuille(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -143,7 +143,7 @@ Future<bool> formulairePaiement(BuildContext context, {String? clientId, Facture
               onTap: () async {
                 final n = lireMontant(montant.text);
                 if (n == null) return maj(() => erreur = t('Saisissez un montant entier en FCFA.'));
-                if (reference.text.trim().isEmpty) return maj(() => erreur = t('La référence est obligatoire.'));
+                if (reference.text.trim().isEmpty) return maj(() => erreur = t('Saisissez la référence du paiement.'));
                 maj(() => (enCours, erreur) = (true, null));
                 try {
                   final p = await d.ajouterPaiement(
@@ -171,7 +171,7 @@ Future<bool> formulairePaiement(BuildContext context, {String? clientId, Facture
       context,
       [
         r.dejaEnregistre ? t('Ce paiement était déjà enregistré : rien n’a été compté deux fois.') : t('Paiement de {m} enregistré.', {'m': fcfa(r.montant)}),
-        if (r.resteNonAffecte > 0) t('{m} restent à affecter (en revue).', {'m': fcfa(r.resteNonAffecte)}),
+        if (r.resteNonAffecte > 0) t('{m} restent à affecter : retrouvez ce paiement dans À revoir.', {'m': fcfa(r.resteNonAffecte)}),
         if (r.relancesAnnulees.isNotEmpty) accorder(r.relancesAnnulees.length, '{n} relance annulée.', '{n} relances annulées.'),
       ].join(' '),
       icone: 'piece',
@@ -194,7 +194,7 @@ Future<bool> formulaireMessage(BuildContext context, {String? clientId}) async {
     context,
     titre: t('Réponse d’un client'),
     contenu: (f) => StatefulBuilder(
-      builder: (f, maj) => Padding(
+      builder: (f, maj) => CorpsFeuille(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -213,7 +213,7 @@ Future<bool> formulaireMessage(BuildContext context, {String? clientId}) async {
               ),
               const SizedBox(height: 12),
             ],
-            Libelle(t('Reçue par')),
+            Libelle(t('Canal de réception')),
             ChoixPastilles(
               valeurs: const ['WHATSAPP', 'EMAIL'],
               choisie: canalChoisi,
@@ -222,15 +222,15 @@ Future<bool> formulaireMessage(BuildContext context, {String? clientId}) async {
               onChoisi: (v) => maj(() => canalChoisi = v),
             ),
             const SizedBox(height: 12),
-            ChampVerre(libelle: t('Message reçu'), icone: 'commentaire', controleur: texte, lignes: 3, lignesMax: 6),
+            ChampVerre(libelle: t('Texte du message'), icone: 'commentaire', controleur: texte, lignes: 3, lignesMax: 6),
             const SizedBox(height: 12),
             Libelle(t('Facture citée'), facultatif: true),
             ChampChoix(
               icone: 'facture',
               valeur: citee?.numero,
-              indice: t('Aucune'),
+              indice: t('Aucune facture citée'),
               onTap: () async {
-                if (client == null) return maj(() => erreur = t('Choisissez d’abord le client.'));
+                if (client == null) return maj(() => erreur = t('Choisissez d’abord le client pour voir ses factures.'));
                 final x = await choisirFacture(f, client!.id);
                 if (x != null) maj(() => citee = x);
               },
@@ -240,7 +240,7 @@ Future<bool> formulaireMessage(BuildContext context, {String? clientId}) async {
             ErreurFormulaire(erreur),
             const SizedBox(height: 16),
             BoutonVerre(
-              texte: t('Ajouter'),
+              texte: t('Ajouter la réponse'),
               plein: true,
               enCours: enCours,
               onTap: () async {
@@ -260,7 +260,7 @@ Future<bool> formulaireMessage(BuildContext context, {String? clientId}) async {
       ),
     ),
   );
-  if (ok == true && context.mounted) bulle(context, t('Réponse reçue. Elle sera classée, et les cas à décider iront dans À revoir.'), icone: 'commentaire');
+  if (ok == true && context.mounted) bulle(context, t('Réponse ajoutée. Si elle demande une décision, elle s’affichera dans À revoir.'), icone: 'commentaire');
   return ok == true;
 }
 
@@ -270,6 +270,51 @@ const _fichiers = MethodChannel('bj.faktu/fichiers');
 const _champsLot = ['clients', 'factures', 'echeances', 'preferences_contact', 'accords_echeancier'];
 const _obligatoires = {'clients', 'factures', 'echeances'};
 
+/// Avant le selecteur de fichiers : ce qu un portefeuille contient, pour choisir les bons fichiers.
+Future<void> presenterImport(BuildContext context) => montrerFeuille<void>(
+  context,
+  titre: t('Importer un portefeuille'),
+  contenu: (f) => CorpsFeuille(
+    padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          t(
+            'Ajoutez vos clients et ce qu’ils vous doivent à partir de fichiers CSV, exportés de votre logiciel de gestion ou d’un tableur. Faktu calcule ensuite les retards et prépare les relances.',
+          ),
+          style: Textes.corps,
+        ),
+        const SizedBox(height: 14),
+        Libelle(t('Sélectionnez ensemble')),
+        LigneInfo('clients.csv', t('Obligatoire')),
+        LigneInfo('factures.csv', t('Obligatoire')),
+        LigneInfo('echeances.csv', t('Obligatoire')),
+        LigneInfo('preferences_contact.csv', t('Facultatif')),
+        LigneInfo('accords_echeancier.csv', t('Facultatif')),
+        const SizedBox(height: 8),
+        Text(
+          t(
+            'Les lignes valides sont ajoutées. Les lignes en erreur sont listées avec leur motif, pour les corriger. Importer deux fois les mêmes fichiers n’ajoute rien en double.',
+          ),
+          style: Textes.petit,
+        ),
+        const SizedBox(height: 16),
+        BoutonVerre(
+          texte: t('Choisir les fichiers'),
+          icone: 'telecharger',
+          plein: true,
+          onTap: () {
+            Navigator.pop(f);
+            importer(context);
+          },
+        ),
+      ],
+    ),
+  ),
+);
+
 /// Importer un lot : on choisit ses fichiers CSV d un coup ; chacun est reconnu a son nom
 /// (clients.csv, factures.csv, echeances.csv…). Rejouer le meme lot ne cree aucun doublon (S01).
 Future<void> importer(BuildContext context) async {
@@ -277,7 +322,7 @@ Future<void> importer(BuildContext context) async {
   try {
     choix = await _fichiers.invokeListMethod<Object?>('choisirCsv');
   } on PlatformException {
-    if (context.mounted) bulle(context, t('Impossible d’ouvrir les fichiers du téléphone.'), icone: 'alerte');
+    if (context.mounted) bulle(context, t('Impossible d’ouvrir les fichiers du téléphone. Réessayez.'), icone: 'alerte');
     return;
   } on MissingPluginException {
     return;
@@ -295,7 +340,7 @@ Future<void> importer(BuildContext context) async {
   if (manquants.isNotEmpty) {
     bulle(
       context,
-      t('Il manque {f}. Choisissez clients.csv, factures.csv et echeances.csv ensemble.', {'f': manquants.map((m) => '$m.csv').join(', ')}),
+      t('Il manque {f}. Sélectionnez clients.csv, factures.csv et echeances.csv ensemble.', {'f': manquants.map((m) => '$m.csv').join(', ')}),
       icone: 'alerte',
     );
     return;
@@ -315,7 +360,7 @@ Future<void> _montrerRapport(BuildContext context, Json r) {
   final deja = r['deja_importe'] == true || r['statut'] == 'DEJA_IMPORTE';
   return montrerFeuille<void>(
     context,
-    titre: deja ? t('Déjà importé') : t('Import terminé'),
+    titre: deja ? t('Portefeuille déjà importé') : t('Portefeuille importé'),
     contenu: (f) => ConstrainedBox(
       constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(f).height * 0.65),
       child: ListView(
@@ -323,7 +368,7 @@ Future<void> _montrerRapport(BuildContext context, Json r) {
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         children: [
           if (deja)
-            Text(t('Ce lot a déjà été importé. Rien n’a été ajouté : aucun doublon.'), style: Textes.corps)
+            Text(t('Ces fichiers ont déjà été importés. Rien n’a été ajouté en double.'), style: Textes.corps)
           else
             Row(
               children: [

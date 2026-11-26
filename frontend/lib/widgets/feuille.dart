@@ -338,17 +338,33 @@ class _Dialogue extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(texte, textAlign: TextAlign.center, style: Textes.discret.copyWith(fontSize: 14.5)),
                     const SizedBox(height: 18),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: BoutonVerre(texte: t('Annuler'), onTap: () => Navigator.pop(context, false)),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: BoutonVerre(texte: action, teinte: danger ? TeinteVerre.rouge : TeinteVerre.ocean, onTap: () => Navigator.pop(context, true)),
-                        ),
-                      ],
-                    ),
+                    // Cote a cote si l action est courte ; sinon l une sous l autre, l action en haut,
+                    // pour que son libelle reste entier (« Passer au jour suivant »).
+                    if (action.length <= 12)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: BoutonVerre(texte: t('Annuler'), onTap: () => Navigator.pop(context, false)),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: BoutonVerre(
+                              texte: action,
+                              teinte: danger ? TeinteVerre.rouge : TeinteVerre.ocean,
+                              onTap: () => Navigator.pop(context, true),
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          BoutonVerre(texte: action, teinte: danger ? TeinteVerre.rouge : TeinteVerre.ocean, onTap: () => Navigator.pop(context, true)),
+                          const SizedBox(height: 8),
+                          BoutonVerre(texte: t('Annuler'), onTap: () => Navigator.pop(context, false)),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -358,4 +374,16 @@ class _Dialogue extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Le corps d un formulaire en feuille : il defile quand il depasse l ecran
+/// (petit telephone, clavier ouvert), pour que le bouton du bas reste atteignable.
+class CorpsFeuille extends StatelessWidget {
+  const CorpsFeuille({super.key, required this.padding, required this.child});
+
+  final EdgeInsetsGeometry padding;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => SingleChildScrollView(padding: padding, child: child);
 }

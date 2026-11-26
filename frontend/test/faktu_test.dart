@@ -92,4 +92,8 @@ void main() {
   test('l adresse du back-end par défaut passe par adb reverse', () {
     expect(adresseApi, 'http://127.0.0.1:8000');
   });
+
+  test('les montants du back-end deviennent lisibles', () {
+    expect(montantsLisibles('Le solde est de 400000 FCFA'), 'Le solde est de 400 000 FCFA');
+  });
 }
