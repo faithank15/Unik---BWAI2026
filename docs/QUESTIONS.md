@@ -328,3 +328,114 @@ La cible « taux de revue ≤ 40 % » est incompatible avec la règle de la spé
 catégorie sensible, soit environ 70 % des messages, passe en revue humaine). Les cibles de
 précision automatique et d'erreurs critiques non rattrapées sont respectées sur DEV.
 - Statut : **Ouvert** (à ajuster avec l'équipe dans la fiche IA).
+
+## I. Extension IA : préférences, rédaction, espacement et relance manuelle
+
+Document de référence : « Extension IA, préférences, rédaction et espacement » (26 nov. 2026).
+Décisions de l'équipe : les trois blocs sont faits ensemble, avec les valeurs du document pour les
+points « à trancher » (coefficients × 1 / × 1,5 / × 2 par tranches de 100 000 et 500 000 FCFA,
+escalade fixe à 5 jours après R3, modèle conservé, N = 2 retards).
+
+### I1. Espacement selon le montant (bloc 3)
+- Espacement effectif = espacement standard (2 jours, 5 en rattrapage) × coefficient du montant
+  total du message, **arrondi au jour supérieur** (7,5 jours devient 8). Tranches : jusqu'à 100 000
+  FCFA × 1 ; de 100 001 FCFA au seuil de gros montant inclus × 1,5 ; au-delà × 2. Paramètres
+  `seuil_espacement_moyen`, `coef_espacement_moyen_dixiemes` (15) et `coef_espacement_gros_dixiemes`
+  (20), en dixièmes pour rester en entiers.
+- « Arrondi au jour ouvré supérieur » (document) interprété comme « au jour entier supérieur » :
+  le calendrier (dimanche, férié) s'applique déjà à la date de l'envoi, il n'y a rien à arrondir de
+  plus.
+- À l'envoi, le coefficient se lit dans le **solde courant** (revérification), pas dans le total
+  figé à la planification.
+- Un report par espacement bascule la relance en rattrapage le lendemain (la date d'étape est
+  passée), donc l'espacement de rattrapage s'applique ensuite : un gros montant différé peut
+  attendre 10 jours. C'est la conséquence voulue de « chaque contact est plus sensible ».
+- Le délai d'escalade après R3 reste 5 jours pour tous les montants. Statut : **Tranché**.
+- **Conséquences sur le jeu de données (à valider par l'équipe)** : l'oracle du générateur applique
+  la même règle (écrite indépendamment) ; `relances_attendues.csv`, les scénarios S08 à S12, S14,
+  S15 et S19 sont régénérés (303 décisions au lieu de 317). Au 15/12, **3** relances de gros
+  montant au lieu de 4 : CLI-0019 (600 000 FCFA, dernier envoi le 12/12) exige 4 jours et n'est
+  préparé que le 22/12. La R1 du dimanche de CLI-0025 (échéance 0044), qui illustrait le report de
+  jour non ouvré, tombe désormais sous l'espacement de 8 jours : le contrôle n° 16 du jeu de données
+  et les tests S09, S10, S12, S19, R01, R07 et E08 ont été mis à jour avec leurs valeurs recalculées
+  à la main. Le tableau de bord affiche les relances différées (prochaine date et raison).
+
+### I2. Préférences gérées par le gestionnaire (bloc 1)
+- Colonnes ajoutées à `preferences_contact` : `jours_a_eviter` (lundi à samedi, séparés par `;`),
+  `plage_horaire` (MATIN, APRES_MIDI, AUCUNE) et `provenance` (JSON : valeur → source IMPORT ou
+  GESTIONNAIRE, avec la **date de référence**, pas l'heure réelle, pour que `make reset` reste
+  reproductible). Noms de colonnes laissés « à fixer » par le document : choisis ici.
+- Ces deux colonnes sont **facultatives** dans le CSV d'import : un fichier d'avant l'extension reste
+  accepté (« un en-tête manquant ou inconnu rejette le fichier » reste vrai pour tout autre nom).
+- L'interlocuteur est limité à 80 caractères (120 avant) et nettoyé (caractères de contrôle
+  retirés, espaces réduits) ; plus long, l'import le rejette (`VALEUR_INVALIDE`) et la saisie
+  répond 400.
+- Un jour à éviter se traite comme un jour non ouvré pour ce client : l'étape est reportée au
+  prochain jour permis, et un rattrapage n'est pas préparé ce jour-là. À l'envoi, une relance
+  planifiée un jour devenu « à éviter » reste en attente (REPORTEE).
+- Le document dit que les préférences ne sont jamais un prérequis pour relancer. Le **consentement**
+  l'est toujours (règle d'origine : « un client sans préférences est considéré sans consentement ») ;
+  seuls les jours à éviter et la plage horaire sont facultatifs. Statut : **Tranché**, à confirmer.
+- La plage horaire est enregistrée avec l'envoi simulé (`envois_simules.plage_horaire`) ; l'envoi
+  n'est pas décalé dans la journée (il n'y a pas d'heure dans le moteur).
+- Valeur par défaut « Madame, Monsieur » pour l'interlocuteur : appliquée au **courriel rédigé par
+  le LLM** seulement. Les canevas fixes de la section 14 (repli, WhatsApp) gardent « Bonjour » seul,
+  pour ne pas modifier tous les textes historiques.
+- Provenance : un champ n'est marqué GESTIONNAIRE que s'il change (ou n'avait pas de provenance).
+- Le gestionnaire **ou** le validateur peut modifier les préférences (la route était déjà ouverte
+  aux deux rôles).
+
+### I3. Rédaction des courriels (bloc 2)
+- Seul le **courriel** est rédigé par le LLM ; WhatsApp reste en canevas (le document : « WhatsApp
+  suivra le même schéma »). Paramètre `redaction_llm_active` (true par défaut) ; sans LLM configuré,
+  en panne ou avec une rédaction refusée, le canevas de l'étape sert de repli, journalisé
+  (`REDACTION_REPLI`, avec le motif W1 à W8 ou INDISPONIBLE). Un LLM non configuré ne journalise rien.
+- La génération se fait **hors transaction** juste avant l'envoi (lot, validation, relance
+  manuelle) ; l'assemblage dans la transaction d'envoi ne lit que le cache `redactions`.
+- **Clé de cache** : cas, ton de l'étape (ton le plus grave du message), canal, version de
+  consigne **et catégorie « une facture / plusieurs »**. Le document ne cite pas cette dernière,
+  mais le singulier et le pluriel changent la phrase : sans elle, « la facture {numero_facture} »
+  s'appliquerait à plusieurs factures. Sans lien avec le client. Le modèle n'entre pas dans la clé
+  (il est stocké à côté), pour que changer de modèle ne vide pas le cache sans nouvelle consigne.
+- `{date_limite}` = date de référence + `delai_limite_jours` (5), reportée au prochain jour ouvré.
+  `{date_echeance}` = échéance la plus ancienne du message ; `{jours_retard}` = retard maximal ;
+  `{montant_total}` = montant TTC des factures du message ; `{montant_paye}` n'existe que s'il y a
+  eu un paiement, `{date_promesse}` que si une promesse est non tenue. Une variable sans valeur
+  refuse la rédaction (W2) : le contexte donné au LLM liste les variables disponibles.
+- « Bon payeur » = au moins une facture déjà soldée et aucun retard antérieur ; « retardataire
+  habituel » = au moins `retards_retardataire_habituel` (2) factures soldées en retard.
+- Le tableau des factures donne : numéro, émission, échéance, retard et reste dû. Les pénalités du
+  canevas (« pénalité de retard prévue ») ne figurent pas dans le courriel du LLM (mot interdit W4).
+- W7 « français seulement » est une heuristique (alphabet latin, au plus un mot anglais courant) :
+  elle ne détecte pas toutes les langues.
+- Mesure réelle (`gemini-3.1-flash-lite`, 40 combinaisons cas × ton × une/plusieurs factures) :
+  sur les **31 réponses obtenues**, 30 valides (28 dès le premier essai), 1 refusée (W5, objet de 73
+  caractères) puis repliée ; le ton appliqué respecte toujours le plafond. 9 combinaisons n'ont pas
+  pu être évaluées (coupure réseau, 503, délais). Premier essai : 9 sur 40 réponses étaient
+  tronquées (la réflexion du modèle consomme ~1 000 jetons sur les 1 024 autorisés) : limite portée à
+  4 096 pour la rédaction. **Non fait** : notation à l'aveugle par deux personnes sur 20 messages
+  (évaluation humaine prévue par le document). Statut : **Ouvert** (à faire par l'équipe).
+- L'interface de relecture se limite à `GET /api/redactions` et `POST /api/redactions/relue` : une
+  personne peut relire chaque formulation avant le gel. Le gel lui-même n'est pas imposé.
+
+### I4. Relance manuelle instantanée (demande de l'équipe)
+Besoin : relancer un client tout de suite, avec un message rédigé par le LLM. Document de référence :
+aucun ; règles déduites des principes existants, à valider.
+- Route `POST /api/relances/manuelle` (GESTIONNAIRE ou VALIDATEUR) : client, canal facultatif,
+  factures facultatives, commentaire facultatif. Elle crée une relance `origine = MANUELLE`
+  (avec `demandee_par`), prépare la rédaction (hors transaction), puis l'envoie par la voie normale :
+  **toutes les revérifications s'appliquent** (solde courant, statuts, contestation, promesse,
+  accord, message en attente, consentement et canal). Gros montant : validation humaine, pas
+  d'envoi instantané.
+- Ce qu'elle ne respecte pas volontairement : le **calendrier des étapes** et l'**espacement**
+  (c'est le sens d'« instantané »). Elle devient le dernier envoi : l'espacement joue ensuite pour
+  les relances automatiques.
+- Ce qu'elle respecte aussi : jour non ouvré (422 `JOUR_NON_OUVRE`) et jour à éviter par le client
+  (422 `JOUR_A_EVITER`). À discuter : un dimanche, un gestionnaire pourrait vouloir forcer.
+- Étape : la première étape échue (R1, R2, R3) pas encore envoyée, jamais R3 directement ; si toutes
+  les étapes échues sont envoyées, la dernière.
+- Idempotence : une seule relance manuelle par client, canal et jour (le rejeu renvoie la relance
+  existante, 200) ; refusée (422 `RELANCE_DEJA_EN_COURS`) si une relance est déjà préparée pour ce
+  client et ce canal, pour ne jamais envoyer deux fois la même étape.
+- Rien à relancer (soldé, non échu, suspendu) : 422 `RIEN_A_RELANCER`, avec les suspensions.
+- Statut : **Tranché provisoirement**, à confirmer par l'équipe.

@@ -13,12 +13,13 @@ Deux principes guident la conception. Les calculs sont **déterministes et véri
 1. **Import** local du portefeuille (CSV) avec contrôle des champs et des doublons, rejeu sans effet, rapport de rejets motivés.
 2. **Calcul** à la date de référence (15 décembre 2026, avançable) : soldes, retards, statuts (non échue, échue, partiellement payée, soldée, contestée, couverte par un échéancier).
 3. **Priorisation** des factures échues par un score documenté sur 100 (ancienneté 40, solde 35, historique de retard 25), avec la décomposition affichée.
-4. **Planification** des relances graduées (rappel préventif P, puis R1, R2, R3) sur WhatsApp et par courriel simulés, avec messages types fixes, regroupement par client, espacement, report des dimanches et jours fériés.
+4. **Planification** des relances graduées (rappel préventif P, puis R1, R2, R3) sur WhatsApp et par courriel simulés, avec regroupement par client, report des dimanches, jours fériés et jours à éviter du client, et **espacement majoré selon le montant** (× 1, × 1,5 ou × 2). WhatsApp utilise des messages types fixes ; le courriel est rédigé par le LLM dans un cadre fermé, avec repli sur le message type.
 5. **Revérification juste avant l'envoi** : une relance devenue injustifiée (paiement reçu, contestation, promesse, accord, message en attente) est annulée ; gros montants, litiges et cas incertains vont en **validation humaine**.
 6. **Paiements et avoirs simulés** rattachés aux échéances, annulation immédiate des relances concernées.
 7. **Réponses des clients** classées par l'IA (déjà payé, promesse, contestation, échéancier, délai, copie, autre), avec seuil de confiance et reprise humaine.
 8. **Escalade** en revue humaine cinq jours après R3 sans suite.
-9. **Tableau de bord** et **journal** : chaque chiffre renvoie à la liste qui l'explique ; `GET /api/factures/{id}/explication` rassemble la règle de statut appliquée, les pièces et les événements.
+9. **Relance manuelle instantanée** : le gestionnaire peut relancer un client tout de suite (message du LLM pour un courriel) ; toutes les revérifications s'appliquent, seuls le calendrier et l'espacement sont laissés de côté.
+10. **Tableau de bord** et **journal** : chaque chiffre renvoie à la liste qui l'explique ; `GET /api/factures/{id}/explication` rassemble la règle de statut appliquée, les pièces et les événements.
 
 ## 3. Architecture
 
@@ -31,7 +32,7 @@ Interface web ──► API back-end locale (Python, FastAPI) ──► SQLite l
                        └─ canaux et paiements simulés
 ```
 
-Le back-end est dans `backend/`, 59 routes documentées (`backend/openapi.json`), le front-end viendra à côté. Choix techniques justifiés : SQLite sans ORM pour contrôler explicitement les transactions `BEGIN IMMEDIATE` et les verrous ; sessions opaques et mots de passe hachés (scrypt) sans dépendance de plus ; l'IA derrière un **adaptateur unique** (délai, réessais, coupe-circuit, validation stricte de la sortie) remplaçable par un faux dans les tests. La règle d'architecture : le domaine ne dépend ni de FastAPI ni de la base, les services ouvrent la transaction, l'API ne fait que valider et sérialiser.
+Le back-end est dans `backend/`, 62 routes documentées (`backend/openapi.json`), le front-end viendra à côté. Choix techniques justifiés : SQLite sans ORM pour contrôler explicitement les transactions `BEGIN IMMEDIATE` et les verrous ; sessions opaques et mots de passe hachés (scrypt) sans dépendance de plus ; l'IA derrière un **adaptateur unique** (délai, réessais, coupe-circuit, validation stricte de la sortie) remplaçable par un faux dans les tests. La règle d'architecture : le domaine ne dépend ni de FastAPI ni de la base, les services ouvrent la transaction, l'API ne fait que valider et sérialiser.
 
 ## 4. Contrôles
 
@@ -54,20 +55,20 @@ Le protocole suit le plan de tests : écrire les tests avant le code, ne jamais 
 
 | Mesure | Résultat |
 | --- | --- |
-| Tests automatisés | 767 sur 767 réussis, 0 ignoré ; couverture 96 % de `app/domain`, `app/services`, `app/ia` |
+| Tests automatisés | 936 sur 936 réussis, 0 ignoré ; couverture 96 % de `app/domain`, `app/services`, `app/ia` |
 | Soldes et statuts conformes à la vérité terrain | 120 factures et 147 échéances, 0 écart |
 | Affectations de paiements et avoirs | 92 sur 92, 0 écart |
 | Priorisation | 47 rangs et scores identiques |
-| Relances jour par jour (15/12 au 05/01) | 317 décisions identiques à la vérité terrain |
+| Relances jour par jour (15/12 au 05/01) | 303 décisions identiques à la vérité terrain |
 | Scénarios S01 à S23 | 23 sur 23 |
 | Doublons produits par rejeu ou concurrence | 0 (jusqu'à 8 threads) |
-| Sécurité | 401 sans jeton et 403 avec le mauvais rôle sur chaque route (matrice de 59 routes) |
+| Sécurité | 401 sans jeton et 403 avec le mauvais rôle sur chaque route (matrice de 62 routes) |
 | Reproductibilité | `make reset` en 0,1 s ; deux réinitialisations identiques ; installation vérifiée sur un clone propre |
 | Performance (garde-fous) | planification d'une journée 20 ms ; priorisation 15 ms ; tableau de bord 20 ms |
 
 La vérité terrain est calculée par un oracle indépendant, écrit dans le générateur du jeu de données, sans code partagé avec l'API. Les 16 contrôles de cohérence du jeu (unicité, intégrité, sommes, chronologie, volumes, statuts, affectations, déterminisme, confidentialité…) passent.
 
-**Résultats IA (séparés).** Voir la fiche IA : sur le jeu de développement, exactitude 95 % contre 34 % pour une règle par mots-clés, aucune erreur critique. Le jeu de test n'a pas encore été utilisé.
+**Résultats IA (séparés, une tâche chacun).** Classification : sur le jeu de développement, exactitude 95 % contre 34 % pour une règle par mots-clés, aucune erreur critique ; le jeu de test n'a pas encore été utilisé. Rédaction des courriels : 30 réponses valides sur 31 obtenues sur 40 combinaisons, toutes les règles de contrôle appliquées par le code (voir la fiche IA). Les résultats métier ci-dessus ne dépendent pas de l'IA.
 
 ## 6. Comparaison à la référence
 
@@ -75,12 +76,12 @@ Référence : la règle naïve « relancer chaque échéance en retard, une rela
 
 | | Règle naïve | Système |
 | --- | --- | --- |
-| Relances | 51 | 18 messages (22 lignes d'échéances regroupées) |
+| Relances | 51 | 16 messages (19 lignes d'échéances regroupées) |
 | Relances injustifiées (contestation ou promesse en cours) | 8, envoyées | 8, **évitées** (suspendues) |
-| Messages économisés par le regroupement | 0 | 4 |
-| Gros montants | envoyés | 4 mis en attente de validation humaine |
+| Messages économisés par le regroupement | 0 | 3 |
+| Gros montants | envoyés | 3 mis en attente de validation humaine (un quatrième est différé par l'espacement majoré) |
 
-La mesure principale du gain est donc **les relances injustifiées évitées** : des clients qui ont contesté ou promis de payer ne sont pas relancés, et aucun client n'est relancé sur une facture déjà soldée entre la préparation et l'envoi (scénario S07). Les 51 de la règle naïve ne tiennent pas compte du calendrier ; le système n'en envoie que 14 le jour même (les autres sont suspendues, regroupées ou en attente de validation).
+La mesure principale du gain est donc **les relances injustifiées évitées** : des clients qui ont contesté ou promis de payer ne sont pas relancés, et aucun client n'est relancé sur une facture déjà soldée entre la préparation et l'envoi (scénario S07). Les 51 de la règle naïve ne tiennent pas compte du calendrier ; le système n'en envoie que 13 le jour même (les autres sont suspendues, regroupées ou en attente de validation).
 
 **Temps de traitement par dossier, système contre tableur : non mesuré.** Le chronométrage manuel de 20 dossiers par un membre de l'équipe, prévu au cahier des charges, reste à faire ; l'API ne le calcule pas.
 
@@ -88,6 +89,7 @@ La mesure principale du gain est donc **les relances injustifiées évitées** :
 
 - Prototype : pas d'envoi, de paiement ni de facturation réels ; pas d'intégration WhatsApp, mobile money ou facture normalisée. Montants TTC en FCFA, pas de TVA ni de comptabilité ; les pénalités de retard sont informatives.
 - Français uniquement ; les mots en fon ou en yoruba sont une limite connue. La classification ne voit pas le contexte d'une conversation.
+- La rédaction des courriels n'a pas été notée par des personnes (évaluation à l'aveugle prévue sur 20 messages) ; seules les règles automatiques sont mesurées. Les envois restent simulés.
 - Un accord d'échéancier n'est possible que sur une facture sans paiement.
 - Les 400 messages d'évaluation sont fictifs. Les 340 premiers viennent de phrases-types composées par un modèle (Claude) différent de celui qui classe ; les 60 « écrits à la main » ont été **rédigés par ce même modèle, faute de temps, et non par des personnes**. Les noms d'entreprises et de personnes sont inventés, à relire.
 - Le plan gratuit limite fortement l'usage : le modèle visé (Gemini 3.8 Flash) n'y autorise que 20 requêtes par jour, d'où le choix de `gemini-3.1-flash-lite` ; l'API des modèles Gemini est parfois surchargée ou lente.
