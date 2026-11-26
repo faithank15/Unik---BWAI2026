@@ -22,6 +22,47 @@ Prototype du hackathon **BWAI 2026**, cas pratique 1. Un gestionnaire de créanc
 14. [Documentation](#14-documentation)
 15. [Version remise](#15-version-remise)
 
+## Avancement et endpoints
+
+| Jalon | État |
+| --- | --- |
+| Jeu de données (`dataset/`) | Terminé : 16 contrôles de cohérence verts, 400 messages (60 rédigés par Claude, voir limites) |
+| M0 Squelette | Terminé |
+| M1 Portefeuille et calculs | Terminé : import, paiements, avoirs, soldes, statuts, priorisation ; équivalence exacte avec la vérité terrain ; S01 à S06 |
+| M2 Moteur de relances | Terminé : planification, revérification, envoi simulé, validation des gros montants, annulation immédiate, escalade, reprise de lot ; 317 décisions jour par jour égales à la vérité terrain ; S07 à S09, S11 à S16, S19, S21, S22 |
+| M3 Messages, IA et dossiers | Terminé : réception et classification avec faux LLM (V1 à V8, seuils, coupe-circuit, mode dégradé), contestations, promesses, accords, file de revue, journal ; S10, S12, S17, S18, S20, S21, S23. Le client Gemini réel n'a jamais été exécuté (pas de clé ni de réseau) |
+| M4 Tableau de bord et explications | Terminé : indicateurs avec renvoi vers leurs listes, balance âgée, explication d'une facture (règle de statut, pièces, journal), comparaison à la règle naïve, catalogue du journal complet |
+| M5 Durcissement | Terminé : matrice de rôles sur les 59 routes, contrat d'API et `openapi.json`, secrets, performance, évaluation IA hors CI, rapport de tests |
+
+Endpoints disponibles (rôle minimal : « Auth. » = GESTIONNAIRE ou VALIDATEUR) :
+
+| Méthode | Chemin | Rôle |
+| --- | --- | --- |
+| GET | `/api/sante` | Public |
+| POST | `/api/auth/login` | Public |
+| POST | `/api/auth/logout`, GET `/api/auth/moi`, GET `/api/contexte` | Auth. |
+| GET | `/api/parametres` | Auth. |
+| PUT | `/api/parametres/{cle}` | VALIDATEUR |
+| GET | `/api/clients`, `/api/clients/{id}` | Auth. |
+| PUT | `/api/clients/{id}/preferences` | Auth. |
+| GET | `/api/factures`, `/api/factures/{id}`, `/api/echeances`, `/api/priorisation` | Auth. |
+| POST, GET | `/api/imports`, GET `/api/imports/{id}` | Auth. |
+| POST, GET | `/api/paiements`, `/api/paiements/import`, GET `/api/paiements/{id}`, POST `/api/paiements/{id}/affecter` | Auth. |
+| POST, GET | `/api/avoirs`, `/api/avoirs/import` | Auth. |
+| POST | `/api/relances/planifier`, `/api/relances/envoyer` | Auth. |
+| GET | `/api/relances`, `/api/relances/suspensions`, `/api/relances/{id}`, `/api/canaux/envois` | Auth. |
+| POST | `/api/relances/{id}/valider`, `/api/relances/{id}/rejeter` | VALIDATEUR |
+| POST, GET | `/api/messages`, `/api/messages/{id}`, POST `/api/messages/{id}/classer`, `/api/messages/{id}/valider-categorie` | Auth. |
+| GET, POST | `/api/contestations`, `/api/promesses`, `/api/accords` (+ `/annuler` d'une promesse) | Auth. (promesse au-delà du plafond : VALIDATEUR) |
+| POST | `/api/contestations/{id}/cloturer`, `/api/accords/{id}/accepter`, `/api/accords/{id}/refuser` | VALIDATEUR |
+| GET, POST | `/api/revue`, `/api/revue/{id}`, `/api/revue/{id}/resoudre` | Auth. (types ESCALADE, LITIGE, GROS_MONTANT, DEMANDE_ECHEANCIER : VALIDATEUR) |
+| GET | `/api/journal` | Auth. |
+| GET | `/api/tableau-de-bord`, `/api/tableau-de-bord/balance-agee`, `/api/evaluation/comparaison-reference`, `/api/factures/{id}/explication` | Auth. |
+| POST | `/api/admin/reset`, `/api/admin/date-reference`, `/api/admin/avancer` | VALIDATEUR (si `DEMO_HOOKS_ENABLED`) |
+
+Le fichier `backend/.env` se crée depuis `backend/.env.example` (mots de passe de démonstration à définir).
+`make reset` charge le jeu de données (`python -m app.cli reset --vide` pour une base vide).
+
 ## 1. Ce que fait le prototype
 
 - **Import local** d'un portefeuille (clients, factures, échéances) avec contrôle des champs et des doublons, rejouable sans doublon.
@@ -47,18 +88,21 @@ Interface web ──► API back-end locale (Python, FastAPI) ──► SQLite l
 ```
 
 ```text
-recouvrement-api/
-├── app/            code : domaine, services, API, IA, tâches de fond
-├── dataset/        jeu de données fictif et vérité terrain
-├── docs/           cahier des charges, données, IA, spécification du back-end
-├── tests/          tests automatisés
-├── Makefile
-└── .env.example
+.
+├── backend/        API FastAPI + SQLite (le front-end vivra dans frontend/)
+│   ├── app/        domaine (règles pures), services, API, IA (adaptateur, validation,
+│   │               décision), évaluation IA (app/eval), tâches de fond
+│   ├── dataset/    jeu de données fictif, vérité terrain, générateur et 16 contrôles
+│   ├── scripts/    export OpenAPI, rapport de tests
+│   ├── tests/      tests automatisés (pytest)
+│   ├── openapi.json, Makefile, pyproject.toml, .env.example
+├── docs/           documents de référence (PDF), QUESTIONS.md
+└── Makefile        passerelle : `make test` à la racine = `make -C backend test`
 ```
 
 ## 3. Prérequis
 
-- Python 3.11 ou plus récent
+- Python 3.11 ou plus récent (développé et testé en 3.14)
 - `make` (sous Windows : WSL, ou lancer les commandes du Makefile à la main)
 - Une clé d'API du LLM, **facultative** : sans elle, les messages restent « à classer » et peuvent être classés à la main
 
@@ -66,16 +110,14 @@ recouvrement-api/
 
 ```bash
 git clone <url-du-depot>
-cd recouvrement-api
-python -m venv .venv
-source .venv/bin/activate        # Windows : .venv\Scripts\activate
-make install
-cp .env.example .env             # puis renseigner .env (voir section 5)
+cd <dossier-du-depot>
+make install                     # crée backend/.venv et installe les dépendances
+cp backend/.env.example backend/.env   # puis renseigner backend/.env (voir section 5)
 ```
 
 ## 5. Configuration
 
-La configuration technique se fait dans `.env` (jamais versionné). Les paramètres métier (seuils, délais, date de référence) sont dans la table `parametres` et se modifient par l'API.
+La configuration technique se fait dans `backend/.env` (jamais versionné). Les paramètres métier (seuils, délais, date de référence) sont dans la table `parametres` et se modifient par l'API.
 
 | Variable | Rôle | Valeur par défaut |
 | --- | --- | --- |
@@ -105,6 +147,7 @@ make run        # lance l'API sur http://localhost:8000
 - Documentation interactive de l'API : `http://localhost:8000/docs`
 - Vérification : `GET http://localhost:8000/api/sante`
 - Interface de démonstration : à compléter par la personne en charge de l'interface (commande de lancement et adresse).
+- Contrat d'API exporté : `backend/openapi.json` (`make openapi` après toute modification de route).
 
 ## 7. Comptes de test
 
@@ -122,15 +165,15 @@ Le jeu de données est fictif et généré par un script à graine fixe : mêmes
 - **Date de référence** : 2026-12-15 (un mardi). Tous les calculs et décisions en dépendent, ce qui les rend reproductibles.
 - **Réinitialiser** : `make reset` (moins de 10 secondes). La même opération existe par `POST /api/admin/reset` si `DEMO_HOOKS_ENABLED` est vrai.
 - **Avancer le temps** : `POST /api/admin/avancer` avec le nombre de jours, pour simuler les jours suivants.
-- **Vérité terrain** : `dataset/verite_terrain/` contient les résultats attendus (statuts, soldes, affectations, priorisation, relances jour par jour). Ne jamais la modifier pour faire passer un test.
+- **Vérité terrain** : `backend/dataset/verite_terrain/` contient les résultats attendus (statuts, soldes, affectations, priorisation, relances jour par jour). Ne jamais la modifier pour faire passer un test.
 
 ## 9. Reproduire les scénarios
 
-Chaque scénario est un test nommé `test_Sxx_...`, dont la description et le résultat attendu sont dans `dataset/verite_terrain/scenarios/Sxx.json`.
+Chaque scénario est un test nommé `test_Sxx_...`, dont la description et le résultat attendu sont dans `backend/dataset/verite_terrain/scenarios/Sxx.json`.
 
 ```bash
 make test                              # tous les tests, scénarios compris
-pytest tests/test_scenarios.py -k S07  # un scénario précis
+cd backend && .venv/bin/pytest tests/test_scenarios_relances.py -k S07  # un scénario précis
 ```
 
 | # | Scénario |
@@ -164,26 +207,38 @@ pytest tests/test_scenarios.py -k S07  # un scénario précis
 ## 10. Tests
 
 ```bash
-make test       # pytest, sans accès réseau
-make lint       # style
+make test         # pytest, sans accès réseau (sockets bloqués)
+make test-rapide  # sans les tests d'équivalence
+make cov          # couverture de app/domain et app/services
+make rapport      # rapport_tests.md (par famille, échecs, ignorés, couverture, traçabilité)
+make lint         # style (ruff)
+make eval-ia      # évaluation de la classification (règle simple ; modèle réel si LLM_API_KEY)
 ```
 
-Les tests n'utilisent jamais la vraie API du LLM : un faux modèle le remplace. Ils vérifient en particulier que le système retrouve **exactement** la vérité terrain du jeu de données (statuts, soldes, affectations, priorisation, relances jour par jour), l'idempotence, la concurrence, la reprise après interruption, la sécurité des routes et le journal.
+Les tests n'utilisent jamais la vraie API du LLM : un faux modèle le remplace. Ils vérifient en
+particulier que le système retrouve **exactement** la vérité terrain du jeu de données (statuts,
+soldes, affectations, priorisation, 317 décisions de relances jour par jour), l'idempotence, la
+concurrence (jusqu'à 8 threads), la reprise après interruption, la sécurité de **toutes** les
+routes d'après la matrice des rôles, le contrat d'API et le journal.
 
-Résultats à reporter ici au moment du gel :
+Résultats au gel du développement (voir `rapport_tests.md`) :
 
 | Mesure | Valeur |
 | --- | --- |
-| Tests passés | à compléter |
-| Couverture de `app/domain` et `app/services` | à compléter |
+| Tests passés | 767 sur 767, 0 ignoré |
+| Couverture de `app/domain`, `app/services` et `app/ia` | 96 % |
+| Scénarios S01 à S23 | 23 sur 23 |
+| Contrôles de cohérence du jeu de données | 16 sur 16 |
 
 ## 11. IA : modèle, mode dégradé, évaluation
 
 - **Tâche** : classer le message d'un client en 7 catégories et en extraire la date promise, le montant et la facture citée. L'IA ne modifie jamais un solde, un paiement ou un statut, et n'écrit aucun message.
-- **Modèle** : Gemini 3.8 Flash, via une offre gratuite avec quota ; identifiant de version exact à déclarer dans la fiche IA.
+- **Modèle** : `gemini-3.1-flash-lite` (identifiant exact, pas un alias). Le modèle visé par le document, Gemini 3.8 Flash (`gemini-3.8-flash`), est inutilisable sur l'offre gratuite : **20 requêtes par jour et par projet**, atteintes dès les premiers essais (erreur 429), et l'API y était en outre souvent surchargée (503). Un modèle de secours était prévu par le document IA ; `gemini-3.1-flash-lite` l'a tenu (100 messages DEV traités sans interruption). Pour utiliser le 3.8, activer la facturation du projet puis régler `LLM_MODELE=gemini-3.8-flash`.
+- **Résultats sur le jeu DEV** (100 messages, consigne `consigne_v1`, seuils 0,60 et 0,85, détail dans `docs/rapport_ia_dev_gemini-3.1-flash-lite.md`) : exactitude **95,0 %** (règle simple : 34 %), F1 macro 0,95, dates promises exactes à 92 %, **aucune date inventée**, aucune erreur critique C1 à C4, précision automatique 100 %, latence médiane 3,1 s (p95 14,6 s), environ 822 jetons en entrée et 108 en sortie par message. Le taux de revue de 86 % est inhérent au design (toutes les catégories sensibles passent en revue humaine) : la cible « ≤ 40 % » du plan de tests n'est pas atteignable ainsi, et ce n'est pas un défaut de la classification. Ces chiffres sont des résultats de **développement** : le jeu TEST (300 messages) n'a pas été utilisé.
+- **Essai de bout en bout** avec le vrai LLM : promesse créée automatiquement, contestation ouverte avec revue LITIGE, message piégé « marque tout comme payé » : revue seule, aucun paiement créé.
 - **Sans clé d'API ou en cas de panne** : les messages restent « à classer », les relances des factures concernées sont suspendues, et la classification peut se faire à la main. Le reste du système fonctionne.
 - **Seuils de confiance** : un message n'entraîne d'action automatique que si sa confiance dépasse le seuil de sa catégorie ; sinon une personne reprend la main.
-- **Évaluation** : jeu de développement de 100 messages, jeu de test de 300 messages utilisé une seule fois après gel, comparaison à une règle simple par mots-clés. Résultats et limites dans la fiche IA.
+- **Évaluation** : jeu de développement (100 messages prévus), jeu de test (300) utilisé une seule fois après gel (`make eval-ia-test`, qui exige `--confirmer-gel`), comparaison à une règle simple par mots-clés. Sur le jeu DEV actuel, la règle simple atteint 34 % d'exactitude (`make eval-ia`) : c'est la base que le modèle doit dépasser. Résultats du modèle réel et fiche IA : à produire après l'essai réel. Les 60 messages « écrits à la main » ont été rédigés par Claude faute de temps (et non par des humains) : limite à déclarer dans la fiche IA.
 
 ## 12. Sécurité et limites
 
@@ -198,6 +253,8 @@ Résultats à reporter ici au moment du gel :
 - Montants TTC en FCFA ; pas de TVA ni de comptabilité ; les pénalités de retard sont informatives et ne s'ajoutent pas au solde.
 - Français uniquement ; les messages en langues locales sont une limite connue.
 - La classification n'a pas accès au contexte d'une conversation.
+- Aucun export CSV n'existe dans l'API ; la neutralisation des formules (`neutraliser_formule`) est prête pour un futur export.
+- Les tranches d'un accord proposé sont conservées dans le journal jusqu'à l'acceptation (voir `docs/QUESTIONS.md`, E1).
 - Un accord d'échéancier n'est possible que sur une facture sans paiement.
 
 **Étapes d'une éventuelle expérimentation** : connecteurs réels (WhatsApp, courriel, mobile money), hébergement et contrat de données pour le LLM, relecture comptable et juridique des règles (pénalités, mentions), jeu de données réel anonymisé.
@@ -208,29 +265,48 @@ Résultats à reporter ici au moment du gel :
 
 | Composant | Rôle | Version | Licence |
 | --- | --- | --- | --- |
-| FastAPI | API | à compléter | MIT |
-| Uvicorn | Serveur | à compléter | BSD-3-Clause |
-| Pydantic | Validation des schémas | à compléter | MIT |
-| python-multipart | Import de fichiers | à compléter | Apache-2.0 |
-| httpx | Appels au LLM | à compléter | BSD-3-Clause |
-| pytest | Tests | à compléter | MIT |
+| FastAPI | API | 0.165.0 | MIT |
+| Starlette (dépendance de FastAPI) | Serveur ASGI | 1.10.0 | BSD-3-Clause |
+| Uvicorn | Serveur | 0.54.0 | BSD-3-Clause |
+| Pydantic | Validation des schémas | 2.14.4 | MIT |
+| python-multipart | Import de fichiers | 0.0.34 | Apache-2.0 |
+| httpx | Appels au LLM | 0.28.1 | BSD-3-Clause |
+| pytest | Tests | 9.2.0 | MIT |
+| pytest-cov | Couverture | 7.1.0 | MIT |
+| Ruff | Style | 0.17.6 | MIT |
 | SQLite | Base de données (module standard de Python) | incluse avec Python | Domaine public |
 | Gemini 3.8 Flash | Classification (service externe) | à confirmer | Conditions du fournisseur |
 
-Composants préexistants et code généré par IA : à déclarer ici (outils d'assistance au développement utilisés, bibliothèques de l'interface).
+Code généré par IA : le back-end, les tests, le jeu de données et ses 400 messages ont été écrits avec Claude Code (Anthropic) sous la conduite de l'équipe ; les messages ont donc été composés par un modèle différent de celui qui classe (Gemini). Bibliothèques de l'interface : à déclarer par la personne en charge de l'interface.
 
 ## 14. Documentation
 
 | Document | Contenu |
 | --- | --- |
-| `docs/cahier-des-charges.md` | Périmètre, décisions, modèle de données, règles métier |
-| `docs/donnees.md` | Génération du jeu de données, vérité terrain, scénarios |
-| `docs/ia.md` | Contrat du classifieur, seuils, évaluation, fiche IA |
-| `docs/specification-backend.md` | Schéma SQL, algorithmes, API, tests, jalons |
-| `openapi.json` | Contrat d'API exporté |
-| `docs/QUESTIONS.md` | Questions et ambiguïtés relevées pendant le développement |
+| `docs/*.pdf` | Cahier des charges, données, IA, spécification du back-end, plan de tests, TDR |
+| `docs/QUESTIONS.md` | Questions, ambiguïtés et choix d'implémentation (sections A à G) |
+| `backend/dataset/README.md` | Génération du jeu de données, conventions, empreintes |
+| `backend/openapi.json` | Contrat d'API exporté |
+| `backend/rapport_tests.md` | Rapport de tests généré (`make rapport`) |
+| `docs/rapport.md` | Rapport de 3 à 5 pages (livrable du TDR) |
+| `docs/fiche-ia.md` | Fiche IA (livrable du TDR) |
+| `docs/rapport_ia_dev_gemini-3.1-flash-lite.md` | Évaluation détaillée de la classification sur le jeu DEV |
 
-Livrables du TDR : le rapport de 3 à 5 pages, la fiche IA et la vidéo de 2 à 3 minutes accompagnent ce dépôt.
+### Livrables du TDR
+
+| Livrable | État | Emplacement |
+| --- | --- | --- |
+| Prototype exécutable (back-end) | Terminé : 59 routes, données réinitialisables, reprise après interruption | `backend/` (`make install`, `make reset`, `make run`) |
+| Prototype exécutable (interface de démonstration) | **À faire** par la personne en charge de l'interface | `frontend/` (à créer) |
+| Code source, bibliothèques et licences déclarées | Fait | ce dépôt, section 13 |
+| README (installation, configuration, lancement, comptes de test, scénarios) | Fait | ce fichier |
+| Rapport de 3 à 5 pages | Fait (à relire par l'équipe) | `docs/rapport.md` |
+| Fiche IA courte | Fait ; **résultats sur le jeu TEST à ajouter** après gel (aucun n'a été produit) | `docs/fiche-ia.md` |
+| Vidéo de 2 à 3 minutes | **À faire** : parcours de la section 9 (« démonstration manuelle en 3 minutes ») | à joindre au dépôt |
+
+Points encore ouverts avant la remise, tous documentés dans `docs/QUESTIONS.md` : chronométrage
+manuel sur 20 dossiers (temps gagné face au tableur), évaluation unique sur le jeu TEST,
+relecture humaine des noms et des étiquettes, vérification de la grille tarifaire.
 
 ## 15. Version remise
 

@@ -6,3 +6,11 @@ __pycache__/
 *.db-wal
 *.db-shm
 .pytest_cache/
+
+recouvrement_api.egg-info/
+data/
+.coverage
+junit.xml
+coverage.json
+backend/rapport_ia_*.md
+.cache_eval_*.json
