@@ -1,0 +1,4309 @@
+{
+  "components": {
+    "schemas": {
+      "AccordEntree": {
+        "properties": {
+          "facture_id": {
+            "title": "Facture Id",
+            "type": "string"
+          },
+          "tranches": {
+            "items": {
+              "$ref": "#/components/schemas/Tranche"
+            },
+            "maxItems": 24,
+            "minItems": 1,
+            "title": "Tranches",
+            "type": "array"
+          }
+        },
+        "required": [
+          "facture_id",
+          "tranches"
+        ],
+        "title": "AccordEntree",
+        "type": "object"
+      },
+      "AffectationEntree": {
+        "properties": {
+          "affectations": {
+            "items": {
+              "$ref": "#/components/schemas/LigneAffectation"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Affectations",
+            "type": "array"
+          }
+        },
+        "required": [
+          "affectations"
+        ],
+        "title": "AffectationEntree",
+        "type": "object"
+      },
+      "AvancerEntree": {
+        "properties": {
+          "executer": {
+            "default": false,
+            "title": "Executer",
+            "type": "boolean"
+          },
+          "jours": {
+            "maximum": 60.0,
+            "minimum": 1.0,
+            "title": "Jours",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "jours"
+        ],
+        "title": "AvancerEntree",
+        "type": "object"
+      },
+      "AvoirEntree": {
+        "properties": {
+          "date": {
+            "maxLength": 10,
+            "minLength": 10,
+            "title": "Date",
+            "type": "string"
+          },
+          "facture_id": {
+            "title": "Facture Id",
+            "type": "string"
+          },
+          "montant": {
+            "title": "Montant",
+            "type": "integer"
+          },
+          "motif": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Motif",
+            "type": "string"
+          }
+        },
+        "required": [
+          "facture_id",
+          "date",
+          "montant",
+          "motif"
+        ],
+        "title": "AvoirEntree",
+        "type": "object"
+      },
+      "Body_importer_api_imports_post": {
+        "properties": {
+          "accords_echeancier": {
+            "anyOf": [
+              {
+                "contentMediaType": "application/octet-stream",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accords Echeancier"
+          },
+          "clients": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Clients",
+            "type": "string"
+          },
+          "echeances": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Echeances",
+            "type": "string"
+          },
+          "factures": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Factures",
+            "type": "string"
+          },
+          "preferences_contact": {
+            "anyOf": [
+              {
+                "contentMediaType": "application/octet-stream",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preferences Contact"
+          }
+        },
+        "required": [
+          "clients",
+          "factures",
+          "echeances"
+        ],
+        "title": "Body_importer_api_imports_post",
+        "type": "object"
+      },
+      "Body_importer_avoirs_api_avoirs_import_post": {
+        "properties": {
+          "fichier": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Fichier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "fichier"
+        ],
+        "title": "Body_importer_avoirs_api_avoirs_import_post",
+        "type": "object"
+      },
+      "Body_importer_paiements_api_paiements_import_post": {
+        "properties": {
+          "fichier": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Fichier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "fichier"
+        ],
+        "title": "Body_importer_paiements_api_paiements_import_post",
+        "type": "object"
+      },
+      "ClotureEntree": {
+        "properties": {
+          "commentaire": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Commentaire",
+            "type": "string"
+          },
+          "resolution": {
+            "title": "Resolution",
+            "type": "string"
+          }
+        },
+        "required": [
+          "resolution",
+          "commentaire"
+        ],
+        "title": "ClotureEntree",
+        "type": "object"
+      },
+      "ConnexionEntree": {
+        "properties": {
+          "mot_de_passe": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Mot De Passe",
+            "type": "string"
+          },
+          "nom_utilisateur": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Nom Utilisateur",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nom_utilisateur",
+          "mot_de_passe"
+        ],
+        "title": "ConnexionEntree",
+        "type": "object"
+      },
+      "ConnexionSortie": {
+        "properties": {
+          "expire_le": {
+            "title": "Expire Le",
+            "type": "string"
+          },
+          "jeton": {
+            "title": "Jeton",
+            "type": "string"
+          },
+          "utilisateur": {
+            "$ref": "#/components/schemas/UtilisateurSortie"
+          }
+        },
+        "required": [
+          "jeton",
+          "expire_le",
+          "utilisateur"
+        ],
+        "title": "ConnexionSortie",
+        "type": "object"
+      },
+      "ContestationEntree": {
+        "properties": {
+          "echeance_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Echeance Id"
+          },
+          "facture_id": {
+            "title": "Facture Id",
+            "type": "string"
+          },
+          "motif": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Motif",
+            "type": "string"
+          }
+        },
+        "required": [
+          "facture_id",
+          "motif"
+        ],
+        "title": "ContestationEntree",
+        "type": "object"
+      },
+      "DateEntree": {
+        "properties": {
+          "date": {
+            "title": "Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date"
+        ],
+        "title": "DateEntree",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "LigneAffectation": {
+        "properties": {
+          "echeance_id": {
+            "title": "Echeance Id",
+            "type": "string"
+          },
+          "montant": {
+            "title": "Montant",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "echeance_id",
+          "montant"
+        ],
+        "title": "LigneAffectation",
+        "type": "object"
+      },
+      "MessageEntree": {
+        "properties": {
+          "canal": {
+            "title": "Canal",
+            "type": "string"
+          },
+          "client_id": {
+            "maxLength": 30,
+            "title": "Client Id",
+            "type": "string"
+          },
+          "contenu": {
+            "minLength": 1,
+            "title": "Contenu",
+            "type": "string"
+          },
+          "facture_citee": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Facture Citee"
+          },
+          "reference_externe": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Externe"
+          }
+        },
+        "required": [
+          "client_id",
+          "canal",
+          "contenu"
+        ],
+        "title": "MessageEntree",
+        "type": "object"
+      },
+      "PaiementEntree": {
+        "properties": {
+          "client_id": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id"
+          },
+          "date_paiement": {
+            "maxLength": 10,
+            "minLength": 10,
+            "title": "Date Paiement",
+            "type": "string"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "montant": {
+            "title": "Montant",
+            "type": "integer"
+          },
+          "reference_externe": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Reference Externe",
+            "type": "string"
+          },
+          "references_indiquees": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "References Indiquees",
+            "type": "array"
+          }
+        },
+        "required": [
+          "date_paiement",
+          "montant",
+          "mode",
+          "reference_externe"
+        ],
+        "title": "PaiementEntree",
+        "type": "object"
+      },
+      "ParametreEntree": {
+        "properties": {
+          "valeur": {
+            "title": "Valeur",
+            "type": "string"
+          }
+        },
+        "required": [
+          "valeur"
+        ],
+        "title": "ParametreEntree",
+        "type": "object"
+      },
+      "PreferencesEntree": {
+        "properties": {
+          "canal_prefere": {
+            "anyOf": [
+              {
+                "pattern": "^(WHATSAPP|EMAIL)$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canal Prefere"
+          },
+          "canaux_autorises": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canaux Autorises"
+          },
+          "consentement_relance": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consentement Relance"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "interlocuteur": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interlocuteur"
+          },
+          "whatsapp": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Whatsapp"
+          }
+        },
+        "title": "PreferencesEntree",
+        "type": "object"
+      },
+      "PromesseEntree": {
+        "properties": {
+          "date_promise": {
+            "title": "Date Promise",
+            "type": "string"
+          },
+          "facture_id": {
+            "title": "Facture Id",
+            "type": "string"
+          },
+          "montant_promis": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Montant Promis"
+          }
+        },
+        "required": [
+          "facture_id",
+          "date_promise"
+        ],
+        "title": "PromesseEntree",
+        "type": "object"
+      },
+      "ResolutionEntree": {
+        "properties": {
+          "commentaire": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commentaire"
+          },
+          "decision": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Decision",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision"
+        ],
+        "title": "ResolutionEntree",
+        "type": "object"
+      },
+      "Tranche": {
+        "properties": {
+          "date_echeance": {
+            "title": "Date Echeance",
+            "type": "string"
+          },
+          "montant": {
+            "exclusiveMinimum": 0.0,
+            "title": "Montant",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "date_echeance",
+          "montant"
+        ],
+        "title": "Tranche",
+        "type": "object"
+      },
+      "UtilisateurSortie": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nom_affiche": {
+            "title": "Nom Affiche",
+            "type": "string"
+          },
+          "nom_utilisateur": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nom Utilisateur"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nom_affiche",
+          "role"
+        ],
+        "title": "UtilisateurSortie",
+        "type": "object"
+      },
+      "ValidationCategorie": {
+        "properties": {
+          "categorie": {
+            "title": "Categorie",
+            "type": "string"
+          },
+          "commentaire": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commentaire"
+          },
+          "date_promise": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Promise"
+          },
+          "facture_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Facture Id"
+          },
+          "montant_promis": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Montant Promis"
+          }
+        },
+        "required": [
+          "categorie"
+        ],
+        "title": "ValidationCategorie",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Prototype de démonstration. Tout est simulé.",
+    "title": "Recouvrement automatique des factures impayées – BWAI 2026",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/accords": {
+      "get": {
+        "operationId": "liste_accords_api_accords_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "statut",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(PROPOSE|ACCEPTE|RESPECTE|ROMPU)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Statut"
+            }
+          },
+          {
+            "in": "query",
+            "name": "facture_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Facture Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Liste Accords Api Accords Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Liste des accords d'échéancier",
+        "tags": [
+          "Dossiers, revue et journal"
+        ]
+      },
+      "post": {
+        "operationId": "proposer_api_accords_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccordEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Proposer Api Accords Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Propose un accord (au moins 2 tranches)",
+        "tags": [
+          "Dossiers, revue et journal"
+        ]
+      }
+    },
+    "/api/accords/{accord_id}/accepter": {
+      "post": {
+        "operationId": "accepter_api_accords__accord_id__accepter_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accord_id",
+            "required": true,
+            "schema": {
+              "title": "Accord Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Accepter Api Accords  Accord Id  Accepter Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Accepte et remplace les échéances",
+        "tags": [
+          "Dossiers, revue et journal"
+        ]
+      }
+    },
+    "/api/accords/{accord_id}/refuser": {
+      "post": {
+        "operationId": "refuser_api_accords__accord_id__refuser_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accord_id",
+            "required": true,
+            "schema": {
+              "title": "Accord Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Refuser Api Accords  Accord Id  Refuser Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Refuse la proposition",
+        "tags": [
+          "Dossiers, revue et journal"
+        ]
+      }
+    },
+    "/api/admin/avancer": {
+      "post": {
+        "operationId": "avancer_api_admin_avancer_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvancerEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Avancer Api Admin Avancer Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Avance la date de référence (avec exécution facultative)",
+        "tags": [
+          "Paramètres et démonstration"
+        ]
+      }
+    },
+    "/api/admin/date-reference": {
+      "post": {
+        "operationId": "fixer_date_api_admin_date_reference_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DateEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Fixer Date Api Admin Date Reference Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Fixe la date de référence",
+        "tags": [
+          "Paramètres et démonstration"
+        ]
+      }
+    },
+    "/api/admin/reset": {
+      "post": {
+        "operationId": "reset_api_admin_reset_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Reset Api Admin Reset Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Recharge le jeu de données",
+        "tags": [
+          "Paramètres et démonstration"
+        ]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "operationId": "login_api_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnexionEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnexionSortie"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Connexion",
+        "tags": [
+          "Système"
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "logout_api_auth_logout_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Logout Api Auth Logout Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Révoque le jeton courant",
+        "tags": [
+          "Système"
+        ]
+      }
+    },
+    "/api/auth/moi": {
+      "get": {
+        "operationId": "moi_api_auth_moi_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UtilisateurSortie"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Utilisateur courant",
+        "tags": [
+          "Système"
+        ]
+      }
+    },
+    "/api/avoirs": {
+      "get": {
+        "operationId": "liste_avoirs_api_avoirs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "facture_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Facture Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Liste Avoirs Api Avoirs Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Liste des avoirs",
+        "tags": [
+          "Imports, paiements et avoirs"
+        ]
+      },
+      "post": {
+        "operationId": "creer_avoir_api_avoirs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvoirEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Enregistre un avoir (201, ou 200 en cas de rejeu)",
+        "tags": [
+          "Imports, paiements et avoirs"
+        ]
+      }
+    },
+    "/api/avoirs/import": {
+      "post": {
+        "operationId": "importer_avoirs_api_avoirs_import_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_importer_avoirs_api_avoirs_import_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Importer Avoirs Api Avoirs Import Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Importe un fichier avoirs.csv",
+        "tags": [
+          "Imports, paiements et avoirs"
+        ]
+      }
+    },
+    "/api/canaux/envois": {
+      "get": {
+        "operationId": "envois_api_canaux_envois_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "canal",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(WHATSAPP|EMAIL)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Canal"
+            }
+          },
+          {
+            "in": "query",
+            "name": "client_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Client Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Envois Api Canaux Envois Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Boîte d'envoi simulée",
+        "tags": [
+          "Relances et canaux simulés"
+        ]
+      }
+    },
+    "/api/clients": {
+      "get": {
+        "operationId": "liste_clients_api_clients_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "canal",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(WHATSAPP|EMAIL)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Canal"
+            }
+          },
+          {
+            "in": "query",
+            "name": "avec_encours",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Avec Encours"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Liste Clients Api Clients Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Liste des clients",
+        "tags": [
+          "Portefeuille"
+        ]
+      }
+    },
+    "/api/clients/{client_id}": {
+      "get": {
+        "operationId": "detail_client_api_clients__client_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "client_id",
+            "required": true,
+            "schema": {
+              "title": "Client Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Detail Client Api Clients  Client Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Détail d'un client",
+        "tags": [
+          "Portefeuille"
+        ]
+      }
+    },
+    "/api/clients/{client_id}/preferences": {
+      "put": {
+        "operationId": "modifier_preferences_api_clients__client_id__preferences_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "client_id",
+            "required": true,
+            "schema": {
+              "title": "Client Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferencesEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Modifier Preferences Api Clients  Client Id  Preferences Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Met à jour les préférences de contact",
+        "tags": [
+          "Portefeuille"
+        ]
+      }
+    },
+    "/api/contestations": {
+      "get": {
+        "operationId": "liste_contestations_api_contestations_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "statut",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(OUVERTE|CLOTUREE)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Statut"
+            }
+          },
+          {
+            "in": "query",
+            "name": "facture_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Facture Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Liste Contestations Api Contestations Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Liste des contestations",
+        "tags": [
+          "Dossiers, revue et journal"
+        ]
+      },
+      "post": {
+        "operationId": "ouvrir_contestation_api_contestations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContestationEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ouvre une contestation (200 si déjà ouverte)",
+        "tags": [
+          "Dossiers, revue et journal"
+        ]
+      }
+    },
+    "/api/contestations/{contestation_id}/cloturer": {
+      "post": {
+        "operationId": "cloturer_api_contestations__contestation_id__cloturer_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "contestation_id",
+            "required": true,
+            "schema": {
+              "title": "Contestation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClotureEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Cloturer Api Contestations  Contestation Id  Cloturer Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Clôture (VALIDATEUR)",
+        "tags": [
+          "Dossiers, revue et journal"
+        ]
+      }
+    },
+    "/api/contexte": {
+      "get": {
+        "operationId": "contexte_api_contexte_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Contexte Api Contexte Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Date de référence et mode démonstration",
+        "tags": [
+          "Système"
+        ]
+      }
+    },
+    "/api/echeances": {
+      "get": {
+        "operationId": "liste_echeances_api_echeances_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "facture_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Facture Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "client_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Client Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "en_retard",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "En Retard"
+            }
+          },
+          {
+            "in": "query",
+            "name": "echeance_avant",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Echeance Avant"
+            }
+          },
+          {
+            "in": "query",
+            "name": "retard_min",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Retard Min"
+            }
+          },
+          {
+            "in": "query",
+            "name": "retard_max",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Retard Max"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Liste Echeances Api Echeances Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Liste des échéances",
+        "tags": [
+          "Portefeuille"
+        ]
+      }
+    },
+    "/api/evaluation/comparaison-reference": {
+      "get": {
+        "operationId": "comparaison_api_evaluation_comparaison_reference_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Comparaison Api Evaluation Comparaison Reference Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Comparaison avec la règle « relancer tout ce qui est échu »",
+        "tags": [
+          "Tableau de bord et explications"
+        ]
+      }
+    },
+    "/api/factures": {
+      "get": {
+        "operationId": "liste_factures_api_factures_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "statut",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Statut"
+            }
+          },
+          {
+            "in": "query",
+            "name": "client_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Client Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "suspendue",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Suspendue"
+            }
+          },
+          {
+            "in": "query",
+            "name": "retard_min",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Retard Min"
+            }
+          },
+          {
+            "in": "query",
+            "name": "solde_min",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Solde Min"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Liste Factures Api Factures Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Liste calculée des factures",
+        "tags": [
+          "Portefeuille"
+        ]
+      }
+    },
+    "/api/factures/{facture_id}": {
+      "get": {
+        "operationId": "detail_facture_api_factures__facture_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "facture_id",
+            "required": true,
+            "schema": {
+              "title": "Facture Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Detail Facture Api Factures  Facture Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Détail d'une facture",
+        "tags": [
+          "Portefeuille"
+        ]
+      }
+    },
+    "/api/factures/{facture_id}/explication": {
+      "get": {
+        "operationId": "explication_api_factures__facture_id__explication_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "facture_id",
+            "required": true,
+            "schema": {
+              "title": "Facture Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Explication Api Factures  Facture Id  Explication Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Pièces et événements qui expliquent le résultat",
+        "tags": [
+          "Tableau de bord et explications"
+        ]
+      }
+    },
+    "/api/imports": {
+      "get": {
+        "operationId": "liste_imports_api_imports_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Liste Imports Api Imports Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Historique des imports",
+        "tags": [
+          "Imports, paiements et avoirs"
+        ]
+      },
+      "post": {
+        "operationId": "importer_api_imports_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_importer_api_imports_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Importe un lot (clients, préférences, factures, échéances)",
+        "tags": [
+          "Imports, paiements et avoirs"
+        ]
+      }
+    },
+    "/api/imports/{import_id}": {
+      "get": {
+        "operationId": "detail_import_api_imports__import_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "import_id",
+            "required": true,
+            "schema": {
+              "title": "Import Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Detail Import Api Imports  Import Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rapport détaillé d'un import",
+        "tags": [
+          "Imports, paiements et avoirs"
+        ]
+      }
+    },
+    "/api/journal": {
+      "get": {
+        "operationId": "journal_api_journal_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "objet_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Objet Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "objet_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Objet Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type_evenement",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type Evenement"
+            }
+          },
+          {
+            "in": "query",
+            "name": "correlation_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Correlation Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "du",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Du"
+            }
+          },
+          {
+            "in": "query",
+            "name": "au",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Au"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Journal Api Journal Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Journal d'audit (lecture seule)",
+        "tags": [
+          "Dossiers, revue et journal"
+        ]
+      }
+    },
+    "/api/messages": {
+      "get": {
+        "operationId": "liste_api_messages_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "statut_traitement",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(A_CLASSER|CLASSE|EN_REVUE|TRAITE)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Statut Traitement"
+            }
+          },
+          {
+            "in": "query",
+            "name": "categorie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Categorie"
+            }
+          },
+          {
+            "in": "query",
+            "name": "client_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Client Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Liste Api Messages Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Liste des messages",
+        "tags": [
+          "Messages et classification"
+        ]
+      },
+      "post": {
+        "operationId": "recevoir_api_messages_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Simule la réception d'un message client (201)",
+        "tags": [
+          "Messages et classification"
+        ]
+      }
+    },
+    "/api/messages/{message_id}": {
+      "get": {
+        "operationId": "detail_api_messages__message_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "title": "Message Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Detail Api Messages  Message Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Détail avec résultat de classification",
+        "tags": [
+          "Messages et classification"
+        ]
+      }
+    },
+    "/api/messages/{message_id}/classer": {
+      "post": {
+        "description": "`synchrone=true` fait le travail dans la requête (tests) ; sinon le worker s'en charge\net la route ne fait que vérifier que le message existe.",
+        "operationId": "classer_api_messages__message_id__classer_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "title": "Message Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "synchrone",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Synchrone",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Classer Api Messages  Message Id  Classer Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Relance la classification",
+        "tags": [
+          "Messages et classification"
+        ]
+      }
+    },
+    "/api/messages/{message_id}/valider-categorie": {
+      "post": {
+        "operationId": "valider_categorie_api_messages__message_id__valider_categorie_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "title": "Message Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidationCategorie"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Valider Categorie Api Messages  Message Id  Valider Categorie Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Classement humain et application de l'action",
+        "tags": [
+          "Messages et classification"
+        ]
+      }
+    },
+    "/api/paiements": {
+      "get": {
+        "operationId": "liste_paiements_api_paiements_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "client_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Client Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "non_affecte",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Non Affecte"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Liste Paiements Api Paiements Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Liste des paiements",
+        "tags": [
+          "Imports, paiements et avoirs"
+        ]
+      },
+      "post": {
+        "operationId": "creer_paiement_api_paiements_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaiementEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Enregistre un paiement simulé (201, ou 200 en cas de rejeu)",
+        "tags": [
+          "Imports, paiements et avoirs"
+        ]
+      }
+    },
+    "/api/paiements/import": {
+      "post": {
+        "operationId": "importer_paiements_api_paiements_import_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_importer_paiements_api_paiements_import_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Importer Paiements Api Paiements Import Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Importe un fichier paiements.csv",
+        "tags": [
+          "Imports, paiements et avoirs"
+        ]
+      }
+    },
+    "/api/paiements/{paiement_id}": {
+      "get": {
+        "operationId": "detail_paiement_api_paiements__paiement_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "paiement_id",
+            "required": true,
+            "schema": {
+              "title": "Paiement Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Detail Paiement Api Paiements  Paiement Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Détail d'un paiement et de ses affectations",
+        "tags": [
+          "Imports, paiements et avoirs"
+        ]
+      }
+    },
+    "/api/paiements/{paiement_id}/affecter": {
+      "post": {
+        "operationId": "affecter_api_paiements__paiement_id__affecter_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "paiement_id",
+            "required": true,
+            "schema": {
+              "title": "Paiement Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AffectationEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Affecter Api Paiements  Paiement Id  Affecter Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Affectation manuelle d'un paiement ambigu",
+        "tags": [
+          "Imports, paiements et avoirs"
+        ]
+      }
+    },
+    "/api/parametres": {
+      "get": {
+        "operationId": "lister_parametres_api_parametres_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Lister Parametres Api Parametres Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Tous les paramètres métier",
+        "tags": [
+          "Paramètres et démonstration"
+        ]
+      }
+    },
+    "/api/parametres/{cle}": {
+      "put": {
+        "operationId": "modifier_parametre_api_parametres__cle__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "cle",
+            "required": true,
+            "schema": {
+              "title": "Cle",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParametreEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Modifier Parametre Api Parametres  Cle  Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Modifie un paramètre (journalisé)",
+        "tags": [
+          "Paramètres et démonstration"
+        ]
+      }
+    },
+    "/api/priorisation": {
+      "get": {
+        "operationId": "priorisation_api_priorisation_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Priorisation Api Priorisation Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Factures échues classées avec leur score",
+        "tags": [
+          "Portefeuille"
+        ]
+      }
+    },
+    "/api/promesses": {
+      "get": {
+        "operationId": "liste_promesses_api_promesses_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "statut",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(EN_COURS|TENUE|NON_TENUE|ANNULEE)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Statut"
+            }
+          },
+          {
+            "in": "query",
+            "name": "facture_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Facture Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Liste Promesses Api Promesses Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Liste des promesses",
+        "tags": [
+          "Dossiers, revue et journal"
+        ]
+      },
+      "post": {
+        "operationId": "creer_promesse_api_promesses_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromesseEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Creer Promesse Api Promesses Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Crée une promesse (au-delà du plafond : VALIDATEUR)",
+        "tags": [
+          "Dossiers, revue et journal"
+        ]
+      }
+    },
+    "/api/promesses/{promesse_id}/annuler": {
+      "post": {
+        "operationId": "annuler_promesse_api_promesses__promesse_id__annuler_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "promesse_id",
+            "required": true,
+            "schema": {
+              "title": "Promesse Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Annuler Promesse Api Promesses  Promesse Id  Annuler Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Annule une promesse EN_COURS",
+        "tags": [
+          "Dossiers, revue et journal"
+        ]
+      }
+    },
+    "/api/relances": {
+      "get": {
+        "operationId": "liste_api_relances_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "statut",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(PLANIFIEE|EN_ATTENTE_VALIDATION|ENVOYEE_SIM|ANNULEE|SAUTEE|ABSORBEE)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Statut"
+            }
+          },
+          {
+            "in": "query",
+            "name": "client_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Client Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "etape",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(P|R1|R2|R3|GROUPE)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Etape"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Liste Api Relances Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Liste des relances",
+        "tags": [
+          "Relances et canaux simulés"
+        ]
+      }
+    },
+    "/api/relances/envoyer": {
+      "post": {
+        "operationId": "envoyer_api_relances_envoyer_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Envoyer Api Relances Envoyer Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Revérifie et envoie les relances PLANIFIEE du jour",
+        "tags": [
+          "Relances et canaux simulés"
+        ]
+      }
+    },
+    "/api/relances/planifier": {
+      "post": {
+        "operationId": "planifier_api_relances_planifier_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Planifier Api Relances Planifier Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Lance la planification du jour",
+        "tags": [
+          "Relances et canaux simulés"
+        ]
+      }
+    },
+    "/api/relances/suspensions": {
+      "get": {
+        "operationId": "suspensions_api_relances_suspensions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Suspensions Api Relances Suspensions Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Échéances suspendues avec leur motif",
+        "tags": [
+          "Relances et canaux simulés"
+        ]
+      }
+    },
+    "/api/relances/{relance_id}": {
+      "get": {
+        "operationId": "detail_api_relances__relance_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "relance_id",
+            "required": true,
+            "schema": {
+              "title": "Relance Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Detail Api Relances  Relance Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Détail d'une relance",
+        "tags": [
+          "Relances et canaux simulés"
+        ]
+      }
+    },
+    "/api/relances/{relance_id}/rejeter": {
+      "post": {
+        "operationId": "rejeter_api_relances__relance_id__rejeter_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "relance_id",
+            "required": true,
+            "schema": {
+              "title": "Relance Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Rejeter Api Relances  Relance Id  Rejeter Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rejette la relance",
+        "tags": [
+          "Relances et canaux simulés"
+        ]
+      }
+    },
+    "/api/relances/{relance_id}/valider": {
+      "post": {
+        "operationId": "valider_api_relances__relance_id__valider_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "relance_id",
+            "required": true,
+            "schema": {
+              "title": "Relance Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Valider Api Relances  Relance Id  Valider Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Valide une relance de gros montant puis revérifie et envoie",
+        "tags": [
+          "Relances et canaux simulés"
+        ]
+      }
+    },
+    "/api/revue": {
+      "get": {
+        "operationId": "liste_revue_api_revue_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "statut",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^(OUVERTE|RESOLUE)$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Statut"
+            }
+          },
+          {
+            "in": "query",
+            "name": "client_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Client Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limite",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limite",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "decalage",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Decalage",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Champ, préfixé de - si décroissant",
+            "in": "query",
+            "name": "tri",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Champ, préfixé de - si décroissant",
+              "title": "Tri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Liste Revue Api Revue Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "File de revue (priorité décroissante, puis création)",
+        "tags": [
+          "Dossiers, revue et journal"
+        ]
+      }
+    },
+    "/api/revue/{revue_id}": {
+      "get": {
+        "operationId": "detail_revue_api_revue__revue_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revue_id",
+            "required": true,
+            "schema": {
+              "title": "Revue Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Detail Revue Api Revue  Revue Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Détail avec l'objet concerné",
+        "tags": [
+          "Dossiers, revue et journal"
+        ]
+      }
+    },
+    "/api/revue/{revue_id}/resoudre": {
+      "post": {
+        "operationId": "resoudre_api_revue__revue_id__resoudre_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revue_id",
+            "required": true,
+            "schema": {
+              "title": "Revue Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolutionEntree"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Resoudre Api Revue  Revue Id  Resoudre Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Enregistre une décision « sans suite »",
+        "tags": [
+          "Dossiers, revue et journal"
+        ]
+      }
+    },
+    "/api/sante": {
+      "get": {
+        "operationId": "sante_api_sante_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Sante Api Sante Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "État du service",
+        "tags": [
+          "Système"
+        ]
+      }
+    },
+    "/api/tableau-de-bord": {
+      "get": {
+        "operationId": "tableau_de_bord_api_tableau_de_bord_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Tableau De Bord Api Tableau De Bord Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Indicateurs, chacun renvoyant à sa liste",
+        "tags": [
+          "Tableau de bord et explications"
+        ]
+      }
+    },
+    "/api/tableau-de-bord/balance-agee": {
+      "get": {
+        "operationId": "balance_agee_api_tableau_de_bord_balance_agee_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Balance Agee Api Tableau De Bord Balance Agee Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Balance âgée par tranche de retard",
+        "tags": [
+          "Tableau de bord et explications"
+        ]
+      }
+    }
+  }
+}

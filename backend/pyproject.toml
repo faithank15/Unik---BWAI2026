@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "recouvrement-api"
+version = "0.1.0"
+description = "Back-end de recouvrement automatique des factures impayées – BWAI 2026"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi==0.165.0",
+  "uvicorn==0.54.0",
+  "pydantic==2.14.4",
+  "python-multipart==0.0.34",
+  "httpx==0.28.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.2.0", "pytest-cov==7.1.0", "ruff==0.17.6"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+  "equivalence: compare le moteur à la vérité terrain du jeu de données",
+  "lent: test lent, exclu de make test-rapide",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B"]
+ignore = ["B008"]  # Depends() dans les arguments : idiome FastAPI
+
+[tool.ruff.lint.per-file-ignores]
+"dataset/*" = ["E501", "E701", "E731", "E741", "B007", "B905", "I001"]
+
+[tool.coverage.run]
+source = ["app/domain", "app/services"]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.setuptools.package-data]
+app = ["schema.sql"]
