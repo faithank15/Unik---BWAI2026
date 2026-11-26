@@ -33,7 +33,7 @@ Future<bool> _formulaire(
     context,
     titre: titre,
     contenu: (f) => StatefulBuilder(
-      builder: (f, maj) => Padding(
+      builder: (f, maj) => CorpsFeuille(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -79,7 +79,7 @@ Future<bool> formulaireAvoir(BuildContext context, Facture f) {
     champs: (maj) => [
       ChampVerre(libelle: t('Montant (FCFA)'), icone: 'piece', controleur: montant, clavier: clavierMontant, indice: nombre(f.solde)),
       const SizedBox(height: 12),
-      Libelle(t('Date')),
+      Libelle(t('Date de l’avoir')),
       ChampChoix(
         icone: 'calendrier',
         valeur: dateLongue(quand),
@@ -90,7 +90,7 @@ Future<bool> formulaireAvoir(BuildContext context, Facture f) {
         },
       ),
       const SizedBox(height: 12),
-      ChampVerre(libelle: t('Motif'), icone: 'crayon', controleur: raison, indice: t('Remise commerciale, retour de marchandise…')),
+      ChampVerre(libelle: t('Motif de l’avoir'), icone: 'crayon', controleur: raison, indice: t('Remise commerciale, retour de marchandise…')),
       const SizedBox(height: 8),
       Text(t('Un avoir réduit ce que le client doit. S’il couvre le solde, les relances s’arrêtent.'), style: Textes.petit),
     ],
@@ -130,7 +130,7 @@ Future<bool> formulaireCloture(BuildContext context, String contestationId) {
   return _formulaire(
     context,
     titre: t('Clore la contestation'),
-    bouton: t('Clore'),
+    bouton: t('Clore la contestation'),
     succes: t('Contestation close.'),
     champs: (maj) => [
       Libelle(t('Décision')),
@@ -142,7 +142,7 @@ Future<bool> formulaireCloture(BuildContext context, String contestationId) {
     ],
     envoyer: () async {
       if (choix == null) return t('Choisissez une décision.');
-      if (commentaire.text.trim().isEmpty) return t('Le commentaire est obligatoire.');
+      if (commentaire.text.trim().isEmpty) return t('Expliquez la décision dans le commentaire.');
       await Donnees.instance.cloturerContestation(contestationId, resolution: choix!, commentaire: commentaire.text.trim());
       return null;
     },
@@ -249,13 +249,13 @@ Future<bool> formulaireAccord(BuildContext context, Facture f) {
               }),
             ),
           const Spacer(),
-          if (tranches.length > 2) Lien(t('Retirer la dernière'), discret: true, onTap: () => maj(tranches.removeLast)),
+          if (tranches.length > 2) Lien(t('Retirer la dernière tranche'), danger: true, onTap: () => maj(tranches.removeLast)),
         ],
       ),
     ],
     envoyer: () async {
       final liste = [for (final (d, c) in tranches) (d, lireMontant(c.text) ?? 0)];
-      if (liste.any((x) => x.$2 <= 0)) return t('Chaque tranche a besoin d’un montant.');
+      if (liste.any((x) => x.$2 <= 0)) return t('Saisissez un montant pour chaque tranche.');
       final somme = liste.fold(0, (s, x) => s + x.$2);
       if (somme != f.montantTtc) return t('La somme des tranches ({s}) doit faire {m}.', {'s': fcfa(somme), 'm': fcfa(f.montantTtc)});
       await Donnees.instance.proposerAccord(f.id, liste);
@@ -269,28 +269,20 @@ Future<bool> deciderAccord(BuildContext context, String id) async {
   final choix = await montrerFeuille<bool>(
     context,
     titre: t('Échéancier proposé'),
-    contenu: (f) => Padding(
+    contenu: (f) => CorpsFeuille(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            t('Accepté, il remplace les échéances de la facture (les anciennes restent dans l’historique).'),
+            t('Si vous l’acceptez, ses tranches remplacent les échéances de la facture. Les anciennes restent dans l’historique.'),
             style: Textes.discret.copyWith(fontSize: 14.5),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: BoutonVerre(texte: t('Refuser'), onTap: () => Navigator.pop(f, false)),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: BoutonVerre(texte: t('Accepter'), plein: true, onTap: () => Navigator.pop(f, true)),
-              ),
-            ],
-          ),
+          BoutonVerre(texte: t('Accepter l’échéancier'), plein: true, onTap: () => Navigator.pop(f, true)),
+          const SizedBox(height: 8),
+          BoutonVerre(texte: t('Refuser l’échéancier'), teinte: TeinteVerre.rouge, onTap: () => Navigator.pop(f, false)),
         ],
       ),
     ),

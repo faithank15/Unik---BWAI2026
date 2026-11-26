@@ -132,21 +132,43 @@ class Api {
     final erreur = corps is Map ? corps['erreur'] : null;
     final message = erreur is Map ? erreur['message'] : null;
     final details = erreur is Map ? erreur['details'] : null;
+    final regle = details is Map ? details['regle'] as String? : null;
     final e = ApiErreur(
-      message is String && message.isNotEmpty
-          ? message
-          : switch (r.statusCode) {
-              401 => 'Votre session a expiré. Reconnectez-vous.',
-              403 => 'Votre rôle ne permet pas cette action.',
-              409 => 'Ce dossier vient d’être traité par quelqu’un d’autre.',
-              422 => 'Les informations saisies ne sont pas valides.',
-              _ => 'Impossible de terminer l’action. Réessayez.',
-            },
+      _phrases[regle] ??
+          (message is String && message.isNotEmpty
+              ? message
+              : switch (r.statusCode) {
+                  401 => 'Votre session a expiré. Reconnectez-vous.',
+                  403 => 'Votre rôle ne permet pas cette action.',
+                  409 => 'Ce dossier vient d’être traité par quelqu’un d’autre.',
+                  422 => 'Les informations saisies ne sont pas valides.',
+                  _ => 'Impossible de terminer l’action. Réessayez.',
+                }),
       statut: r.statusCode,
       code: erreur is Map ? erreur['code'] as String? : null,
-      regle: details is Map ? details['regle'] as String? : null,
+      regle: regle,
     );
     if (e.sessionExpiree && jeton != null) surSessionExpiree?.call();
     throw e;
   }
 }
+
+/// Les regles du back-end, dites a la personne qui saisit : ce qui bloque et quoi faire.
+/// Une regle absente garde le message du serveur.
+const _phrases = {
+  'FACTURE_NON_IDENTIFIABLE': 'Ce client a plusieurs factures ouvertes. Choisissez la facture concernée.',
+  'FACTURE_NON_OUVERTE': 'Cette facture est déjà réglée ou annulée. Choisissez une facture ouverte.',
+  'FACTURE_NON_RELANCABLE': 'Cette facture est réglée ou annulée : elle ne peut plus être relancée.',
+  'DATE_PASSEE': 'La date promise est déjà passée. Choisissez une date à partir d’aujourd’hui.',
+  'DATE_FUTURE': 'Cette date est dans le futur. Choisissez une date passée ou celle d’aujourd’hui.',
+  'AVOIR_SUPERIEUR_AU_SOLDE': 'Le montant de l’avoir dépasse ce que le client doit encore sur cette facture.',
+  'SUR_AFFECTATION': 'Le montant affecté dépasse ce qu’il reste à payer, ou ce qu’il reste du paiement.',
+  'TRANCHES_INSUFFISANTES': 'Un échéancier compte au moins deux tranches.',
+  'DATES_INVALIDES': 'Les dates des tranches doivent se suivre, à partir d’aujourd’hui.',
+  'MESSAGE_DEJA_TRAITE': 'Cette réponse a déjà été classée.',
+  'REVUE_DEJA_RESOLUE': 'Ce dossier a déjà été traité par quelqu’un d’autre.',
+  'CONTESTATION_DEJA_CLOTUREE': 'Cette contestation est déjà close.',
+  'PROMESSE_NON_EN_COURS': 'Cette promesse n’est plus en cours : elle ne peut plus être annulée.',
+  'ECHEANCE_REMPLACEE': 'Cette échéance a été remplacée par un échéancier. Actualisez la page.',
+  'CLIENTS_DIFFERENTS': 'Toutes les échéances doivent appartenir au client du paiement.',
+};

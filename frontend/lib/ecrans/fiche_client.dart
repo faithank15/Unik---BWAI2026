@@ -128,7 +128,7 @@ class _EcranFicheClientState extends State<EcranFicheClient> {
         ],
       ),
       const SizedBox(height: 22),
-      TitreSection(t('Contact'), lien: t('Modifier'), onLien: () => modifierContact(context, c)),
+      TitreSection(t('Contact'), lien: t('Modifier le contact'), onLien: () => modifierContact(context, c)),
       Plaque(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         child: Column(
@@ -136,7 +136,7 @@ class _EcranFicheClientState extends State<EcranFicheClient> {
             if (c.interlocuteur != null) LigneInfo(t('Interlocuteur'), c.interlocuteur!),
             LigneInfo(t('Canal préféré'), canal(c.canalPrefere)),
             if (c.whatsapp != null) LigneInfo('WhatsApp', c.whatsapp!),
-            if (c.email != null) LigneInfo(t('Courriel'), c.email!),
+            if (c.email != null) LigneInfo(t('E-mail'), c.email!),
             LigneInfo(t('Relances'), c.consentement ? t('Autorisées') : t('Refusées par le client'), couleur: c.consentement ? null : Couleurs.erreur),
           ],
         ),
@@ -144,7 +144,7 @@ class _EcranFicheClientState extends State<EcranFicheClient> {
       const SizedBox(height: 22),
       TitreSection(accorder(ouvertes.length, 'Facture ouverte', 'Factures ouvertes')),
       if (ouvertes.isEmpty)
-        EtatVide(icone: 'coche', titre: t('Tout est réglé'))
+        EtatVide(icone: 'coche', titre: t('Aucune facture à payer'))
       else
         GroupeLignes(retrait: 16, lignes: [for (final f in ouvertes) LigneFacture(f, onTap: () => ouvrir(context, 'facture/${f.id}'))]),
       if (fermees.isNotEmpty) ...[
@@ -192,7 +192,7 @@ Future<bool> modifierContact(BuildContext context, Client c) async {
     context,
     titre: t('Contact de {c}', {'c': c.nom}),
     contenu: (f) => StatefulBuilder(
-      builder: (f, maj) => Padding(
+      builder: (f, maj) => CorpsFeuille(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -230,7 +230,7 @@ Future<bool> modifierContact(BuildContext context, Client c) async {
             const SizedBox(height: 10),
             ChampVerre(libelle: 'WhatsApp', icone: 'whatsapp', controleur: whatsapp, clavier: TextInputType.phone, indice: '+2290100000000'),
             const SizedBox(height: 12),
-            ChampVerre(libelle: t('Courriel'), icone: 'enveloppe', controleur: email, clavier: TextInputType.emailAddress),
+            ChampVerre(libelle: t('E-mail'), icone: 'enveloppe', controleur: email, clavier: TextInputType.emailAddress),
             const SizedBox(height: 12),
             ChampVerre(libelle: t('Interlocuteur'), icone: 'profil', controleur: interlocuteur, facultatif: true),
             ErreurFormulaire(erreur),
@@ -427,9 +427,7 @@ class CarteMessage extends StatelessWidget {
               if (valide != null)
                 PastilleStatut(Apparence(categorie(valide), 'verifie', Couleurs.succes))
               else if (m.categorieIa != null)
-                PastilleStatut(Apparence('${t('IA')} : ${categorie(m.categorieIa!)}', 'etincelle', Couleurs.ocean))
-              else
-                PastilleStatut(Apparence(t('À classer'), 'commentaire', Couleurs.discret)),
+                PastilleStatut(Apparence('${t('IA')} : ${categorie(m.categorieIa!)}', 'etincelle', Couleurs.ocean)),
               if (valide == null && m.confiance != null) PastilleStatut(Apparence(confiance(m.confiance), 'aide', Couleurs.discret)),
               if (m.datePromise != null)
                 PastilleStatut(Apparence(t('Promis le {d}', {'d': dateCourte(m.datePromise!)}), 'calendrier', Couleurs.texte, fond: Couleurs.secondaire)),

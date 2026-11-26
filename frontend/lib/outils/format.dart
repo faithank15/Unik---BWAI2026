@@ -55,3 +55,6 @@ String retard(int jours) => switch (jours) {
   1 => '1 jour de retard',
   _ => '${nombre(jours)} jours de retard',
 };
+
+/// Les textes du back-end ecrivent « 400000 FCFA » : on y remet les espaces des milliers.
+String montantsLisibles(String texte) => texte.replaceAllMapped(RegExp(r'(\d{4,}) ?FCFA'), (m) => fcfa(int.parse(m[1]!)));

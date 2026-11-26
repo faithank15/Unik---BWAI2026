@@ -90,7 +90,7 @@ Future<DateTime?> choisirDate(BuildContext context, {DateTime? initiale, DateTim
   final ok = await montrerFeuille<bool>(
     context,
     titre: t('Choisir une date'),
-    contenu: (f) => Padding(
+    contenu: (f) => CorpsFeuille(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,

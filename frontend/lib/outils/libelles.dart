@@ -80,7 +80,7 @@ String motif(String? code) => switch (code) {
 
 String canal(String c) => switch (c) {
   'WHATSAPP' => 'WhatsApp',
-  'EMAIL' => t('Courriel'),
+  'EMAIL' => t('E-mail'),
   _ => lisible(c),
 };
 
@@ -255,8 +255,8 @@ String evenement(String type) => switch (type) {
 
 /// Les rejets d un import (codes du document de donnees), en mots.
 String motifRejet(String code) => switch (code) {
-  'EMAIL_MAL_FORME' => t('Adresse courriel mal formée'),
-  'TELEPHONE_MAL_FORME' => t('Numéro WhatsApp mal formé'),
+  'EMAIL_MAL_FORME' => t('Adresse e-mail non valide'),
+  'TELEPHONE_MAL_FORME' => t('Numéro WhatsApp non valide'),
   'CHAMP_OBLIGATOIRE_MANQUANT' => t('Champ obligatoire manquant'),
   'DOUBLON' || 'DOUBLON_DANS_LOT' => t('Doublon dans le fichier'),
   'IDENTIFIANT_EXISTANT_DIFFERENT' => t('Identifiant déjà connu avec d’autres valeurs'),

@@ -131,7 +131,7 @@ class Relance {
   String get id => '${j['id']}';
   String get clientId => '${j['client_id'] ?? ''}';
   String get canal => '${j['canal'] ?? ''}';
-  String get etape => '${j['etape'] ?? ''}';
+  String get etape => '${j['etape'] ?? j['etape_echeance'] ?? ''}';
   DateTime? get datePrevue => date(j['date_prevue']);
   DateTime? get dateEnvoi => date(j['date_envoi']);
   String get statut => '${j['statut']}';
@@ -165,7 +165,7 @@ class Message {
   String get clientId => '${j['client_id'] ?? ''}';
   String get canal => '${j['canal'] ?? ''}';
   DateTime? get dateReception => date(j['date_reception']);
-  String get contenu => '${j['contenu'] ?? ''}';
+  String get contenu => '${j['contenu'] ?? j['extrait'] ?? ''}';
   String get statut => '${j['statut_traitement']}';
   String? get categorieIa => j['categorie_ia'] as String?;
   double? get confiance => (j['confiance'] as num?)?.toDouble();
