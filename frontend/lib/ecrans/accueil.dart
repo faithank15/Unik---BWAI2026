@@ -174,6 +174,20 @@ class EcranAccueil extends StatelessWidget {
                 style: Textes.petit,
               ),
             ],
+            if (tb.reportees.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Text(accorder(tb.reportees.length, '{n} relance différée', '{n} relances différées'), style: Textes.libelle),
+              Text(
+                t('Le dernier message à ce client est trop récent. Plus le montant est élevé, plus Faktu laisse de jours entre deux relances.'),
+                style: Textes.petit,
+              ),
+              const SizedBox(height: 6),
+              for (final x in tb.reportees)
+                LigneInfo(
+                  d.nomClient('${x['client_id']}'),
+                  date(x['prochaine_date_possible']) == null ? fcfa(entier(x['total'])) : t('le {d}', {'d': dateCourte(date(x['prochaine_date_possible'])!)}),
+                ),
+            ],
           ],
         ),
       ),

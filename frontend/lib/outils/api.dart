@@ -171,4 +171,10 @@ const _phrases = {
   'PROMESSE_NON_EN_COURS': 'Cette promesse n’est plus en cours : elle ne peut plus être annulée.',
   'ECHEANCE_REMPLACEE': 'Cette échéance a été remplacée par un échéancier. Actualisez la page.',
   'CLIENTS_DIFFERENTS': 'Toutes les échéances doivent appartenir au client du paiement.',
+  'JOUR_NON_OUVRE': 'Aujourd’hui est un dimanche ou un jour férié : aucune relance ne part ce jour-là.',
+  'JOUR_A_EVITER': 'Ce client a demandé à ne pas être relancé ce jour de la semaine. Réessayez un autre jour.',
+  'RELANCE_DEJA_EN_COURS': 'Une relance est déjà préparée pour ce client sur ce canal. Envoyez-la ou faites-la valider.',
+  'RIEN_A_RELANCER': 'Rien à relancer pour ce client : ses factures sont réglées, pas encore échues, ou ses relances sont suspendues.',
+  'CANAL_INVALIDE': 'Ce canal n’est pas utilisable pour ce client. Vérifiez son contact.',
+  'CONSENTEMENT_ABSENT': 'Ce client n’a pas accepté d’être relancé. Modifiez son contact s’il a changé d’avis.',
 };

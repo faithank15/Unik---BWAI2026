@@ -158,6 +158,7 @@ class _EcranCompteState extends State<EcranCompte> {
               valeur: u?.validateur == true ? t('Vous pouvez les modifier') : t('Lecture seule'),
               onTap: () => ouvrir(context, 'parametres'),
             ),
+            LigneReglage(icone: 'etincelle', texte: t('Courriels rédigés par l’IA'), onTap: () => ouvrir(context, 'redactions')),
             LigneReglage(icone: 'journal', texte: t('Journal'), onTap: () => ouvrir(context, 'journal')),
             if (u?.validateur == true && (d.contexte?.demonstration ?? false))
               LigneReglage(icone: 'retourner', texte: t('Réinitialiser les données'), valeur: t('Démonstration'), onTap: _reinitialiser),

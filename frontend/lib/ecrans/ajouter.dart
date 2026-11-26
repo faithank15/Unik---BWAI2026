@@ -61,7 +61,7 @@ Future<void> ouvrirAjouter(BuildContext context) => montrerFeuille<void>(
 /// est reconnu comme un rejeu, rien n est compte deux fois (S06).
 Future<bool> formulairePaiement(BuildContext context, {String? clientId, Facture? facture}) async {
   final d = Donnees.instance;
-  var client = clientId == null ? null : d.clients[clientId];
+  var client = clientId == null ? null : d.clientConnu(clientId);
   var mode = 'MOBILE_MONEY';
   var quand = d.dateReference;
   final montant = TextEditingController(text: facture == null ? '' : nombre(facture.solde));
@@ -184,7 +184,7 @@ Future<bool> formulairePaiement(BuildContext context, {String? clientId, Facture
 /// si l IA est indisponible, scenario S23).
 Future<bool> formulaireMessage(BuildContext context, {String? clientId}) async {
   final d = Donnees.instance;
-  var client = clientId == null ? null : d.clients[clientId];
+  var client = clientId == null ? null : d.clientConnu(clientId);
   var canalChoisi = client?.canalPrefere ?? 'WHATSAPP';
   Facture? citee;
   final texte = TextEditingController();

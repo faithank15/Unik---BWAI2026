@@ -18,6 +18,7 @@ import '../widgets/feuille.dart';
 import '../widgets/icone.dart';
 import '../widgets/verre.dart';
 import 'actions_facture.dart';
+import 'relance_manuelle.dart';
 import 'ajouter.dart';
 import 'fiche_client.dart';
 
@@ -235,6 +236,14 @@ class _EcranFactureState extends State<EcranFacture> {
               icone: 'piece',
               texte: t('Enregistrer un paiement'),
               onTap: () => _faire(() => formulairePaiement(context, clientId: f.clientId, facture: f)),
+            ),
+            LigneFeuille(
+              icone: 'envoyer',
+              texte: t('Relancer ce client maintenant'),
+              onTap: () async {
+                final c = await Donnees.instance.client(f.clientId);
+                if (context.mounted) await relancerMaintenant(context, c, facture: f);
+              },
             ),
             LigneFeuille(icone: 'document', texte: t('Enregistrer un avoir'), onTap: () => _faire(() => formulaireAvoir(context, f))),
             if (ouverte == null)

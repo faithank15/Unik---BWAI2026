@@ -41,6 +41,7 @@ La situation du jour, et les relances à préparer et envoyer.
 | Relances du jour | Les relances du jour par statut : préparées, à valider, envoyées, sautées. |
 | **Préparer** | Calcule les relances du jour : quelles factures, quelle étape, quel canal. Rien n'est envoyé. |
 | **Envoyer** | Envoie les relances préparées (envoi simulé). Juste avant l'envoi, Faktu vérifie de nouveau chaque facture : un paiement arrivé entre-temps annule la relance. |
+| Relances différées | Les clients dont le dernier message est trop récent : plus le montant est élevé, plus Faktu laisse de jours entre deux relances. La prochaine date possible est indiquée. |
 | « N relances de gros montant attendent un validateur » | Au-delà de 500 000 FCFA dans un message, la relance attend un validateur. |
 | Suivi | Raccourcis vers Toutes les relances, Messages envoyés, Relances suspendues, Journal. |
 | Jour suivant **(validateur)** | Fait passer la date de référence au jour suivant, puis prépare et envoie les relances de ce jour. Sert à faire avancer la démonstration. |
@@ -83,6 +84,7 @@ Tout sur une facture : où elle en est, pourquoi, et ce qu'on peut faire.
 | Action | Ce qu'elle fait |
 |---|---|
 | Enregistrer un paiement | Saisit un paiement reçu pour cette facture (voir **Ajouter**). |
+| Relancer ce client maintenant | La même relance immédiate, limitée à cette facture. |
 | Enregistrer un avoir | Réduit ce que le client doit : montant, date, motif. S'il couvre le solde, les relances s'arrêtent. |
 | Ouvrir une contestation | Note ce que le client conteste. Les relances de la facture s'arrêtent jusqu'à la clôture. |
 | Clore la contestation **(validateur)** | Décide : le client a raison, la facture est due, ou abandon. Commentaire obligatoire. Si la facture reste due, les relances reprennent. |
@@ -103,7 +105,8 @@ Un client, ce qu'il doit, comment le joindre.
 |---|---|
 | Reste à payer | Le total que le client doit, toutes factures confondues. |
 | Contact | Interlocuteur, canal préféré, téléphone WhatsApp, e-mail, et s'il accepte d'être relancé. |
-| Modifier le contact | Change l'interlocuteur, les canaux autorisés, le canal préféré et l'accord de relance. |
+| Relancer maintenant | Envoie une relance tout de suite, sans attendre le calendrier : choix du canal et raison facultative. Faktu revérifie d'abord le solde, les contestations, les promesses et l'accord du client ; au-delà de 500 000 FCFA, un validateur décide. Le message envoyé s'ouvre ensuite. |
+| Modifier le contact | Change l'interlocuteur, les canaux autorisés, le canal préféré, l'accord de relance, les jours où ne pas le relancer et le moment préféré. La fiche indique la date de la dernière modification faite dans Faktu. |
 | Factures | Les factures ouvertes, puis « Réglées ou annulées ». Chacune ouvre sa page. |
 | Relances récentes | Les derniers messages envoyés à ce client. |
 | Réponses du client | Ses messages et leur classement. |
@@ -219,6 +222,7 @@ Le journal s'ouvre aussi filtré sur une facture ou un client.
 | Carte du compte | Le nom, le rôle et ce que ce rôle permet. |
 | Thème | Clair, sombre, ou celui du téléphone. |
 | Paramètres métier | Les règles du recouvrement : jours entre les relances, seuil des gros montants, plafond des promesses… Le validateur les modifie ; chaque changement est inscrit au journal. |
+| Courriels rédigés par l'IA | Les formulations écrites par l'IA (introduction et conclusion), par cas de client et par ton. Les montants et factures sont insérés par Faktu. Chaque formulation peut être relue et marquée « Relue ». |
 | Journal | Le journal complet. |
 | Réinitialiser les données **(validateur)** | Recharge le jeu de données de démonstration au 15 décembre 2026. Tout ce qui a été fait depuis est effacé. |
 | Bon à savoir | Ce que la démonstration ne fait pas : envois et paiements simulés, IA limitée au classement des réponses, messages en français, pénalités non ajoutées au solde. |

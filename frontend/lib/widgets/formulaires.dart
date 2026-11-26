@@ -177,8 +177,9 @@ Future<T?> choisirDansListe<T>(
   },
 );
 
-Future<Client?> choisirClient(BuildContext context) {
-  final clients = Donnees.instance.clients.values.toList()..sort((a, b) => a.nom.compareTo(b.nom));
+Future<Client?> choisirClient(BuildContext context) async {
+  final clients = [...await Donnees.instance.tousLesClients()]..sort((a, b) => a.nom.compareTo(b.nom));
+  if (!context.mounted) return null;
   return choisirDansListe<Client>(
     context,
     titre: t('Choisir un client'),

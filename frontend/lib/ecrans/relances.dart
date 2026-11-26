@@ -183,6 +183,7 @@ class _EcranRelanceState extends State<EcranRelance> {
                 Row(children: [PastilleStatut(apparenceRelance(r.statut)), const Spacer(), if (r.statut == 'ENVOYEE_SIM') const MentionSimulation()]),
                 const SizedBox(height: 10),
                 LigneInfo(t('Canal'), canal(r.canal)),
+                LigneInfo(t('Origine'), r.manuelle ? t('Relance manuelle, hors calendrier') : t('Calendrier des relances')),
                 if (r.datePrevue != null) LigneInfo(t('Prévue le'), dateLongue(r.datePrevue!)),
                 if (r.dateEnvoi != null) LigneInfo(t('Envoyée le'), dateLongue(r.dateEnvoi!)),
                 if (r.motif != null) LigneInfo(t('Motif'), motif(r.motif)),

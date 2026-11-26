@@ -15,6 +15,7 @@ import 'ecrans/connexion.dart';
 import 'ecrans/facture.dart';
 import 'ecrans/fiche_client.dart';
 import 'ecrans/journal.dart';
+import 'ecrans/redactions.dart';
 import 'ecrans/relances.dart';
 import 'outils/sobriete.dart';
 import 'theme/defilement.dart';
@@ -76,6 +77,7 @@ List<RouteBase> _communes() => [
   GoRoute(path: 'envois', builder: (context, _) => const EcranEnvois()),
   GoRoute(path: 'suspensions', builder: (context, _) => const EcranSuspensions()),
   GoRoute(path: 'parametres', builder: (context, _) => const EcranParametres()),
+  GoRoute(path: 'redactions', builder: (context, _) => const EcranRedactions()),
   GoRoute(
     path: 'journal',
     builder: (context, etat) => EcranJournal(objetId: etat.uri.queryParameters['objet'], correlationId: etat.uri.queryParameters['correlation']),
